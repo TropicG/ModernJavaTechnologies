@@ -13,31 +13,31 @@ public class ShowAPIImpl implements  ShowAPI{
 
     public ShowAPIImpl(Ergenka[] ergenkas, EliminationRule[] defaultEliminationRules) {
         ergenkas = Arrays.copyOf(ergenkas, ergenkas.length);
-        eliminationRules = Arrays.copyOf(eliminationRules, eliminationRules.length);
+        eliminationRules = Arrays.copyOf(defaultEliminationRules, defaultEliminationRules.length);
     }
 
     @Override
     public Ergenka[] getErgenkas() {
 
-        return null;
+        return ergenkas;
     }
 
     @Override
     public void playRound(DateEvent dateEvent) {
-
-        return;
+        for(Ergenka ergenka : ergenkas) {
+            organizeDate(ergenka, dateEvent);
+        }
     }
 
     @Override
     public void eliminateErgenkas(EliminationRule[] eliminationRules){
-
-        return;
+        for(EliminationRule eliminationRule : eliminationRules) {
+            ergenkas = eliminationRule.eliminateErgenkas(ergenkas);
+        }
     }
 
     @Override
     public void organizeDate(Ergenka ergenka, DateEvent dateEvent) {
-
-        return;
+        ergenka.reactToDate(dateEvent);
     }
-
 }
