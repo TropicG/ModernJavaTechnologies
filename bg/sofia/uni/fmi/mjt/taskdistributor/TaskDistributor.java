@@ -1,4 +1,4 @@
-package fmi.mjt.taskdistributor;
+package bg.sofia.uni.fmi.mjt.taskdistributor;
 
 import java.util.Arrays;
 

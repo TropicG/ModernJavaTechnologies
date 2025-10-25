@@ -1,4 +1,4 @@
-package fmi.mjt.uniquesubstringfinder;
+package bg.sofia.uni.fmi.mjt.uniquesubstringfinder;
 
 import java.util.Set;
 import java.util.HashSet;
