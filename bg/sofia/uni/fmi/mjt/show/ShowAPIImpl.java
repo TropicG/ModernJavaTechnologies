@@ -18,7 +18,6 @@ public class ShowAPIImpl implements  ShowAPI{
 
     @Override
     public Ergenka[] getErgenkas() {
-
         return ergenkas;
     }
 
