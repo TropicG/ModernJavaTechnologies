@@ -1,0 +1,75 @@
+Идеята е да се направи приложение, което помага да се избере най-добрите тренировки за седмицата, така че да се постигне максимален ефект за ограничено време (и минимални страдания)
+
+* FitPlanner 
+
+    Трябва да направим клас FitPlanner, който има публичен конструктор (FitPlanner(Collection<Workout> availableWorkouts) и имплементира (FitPlannerAPI)
+
+    в FitPlannerAPI има:
+        - List<Workout> findWorkoutByFilters(List<WorkoutFilters> filters)
+        # Връща лист на всичките тренировки, които мачват подадените филтри
+
+        - List<Workout> generateOptimalWeeklyPlan(int totalMinutes) throws OptimalPlanImpossibleException (това накрая е exception)
+        # Връща ти оптимизиран седмичен план за тренировки, който максимизира изгорените калории и гледа да спазва минутите
+
+        - Map<WorkoutType, List<Workout>> getWorkoutsGroupedByType();
+        # Групира всичките водве тренировки и връща лист от тренировките, за всеки лист
+
+        - List<Workout> getWorkoutsSortedByDifficulty()
+        # Връща ти листове от всичките тренировки, като са сортирани по трудност в нарастващ ред
+
+        - Set<Workout> getUnmodifiableWorkoutSet()
+        # Връща unmodifiable сет на всичките възможни тренировки
+
+* Workouts 
+
+    Има три типа тренировки (CardioWorkout), (StrengthWorkout), (YogaSession) като всички имат публичен конструктор: (String name, int duration, int caloiresBurned, intDifficulty)
+
+    Валидация относно данните на тренировки:
+    - name не трябва да е null или празен/само whitespace
+    - duration винаги трябва да е положително число 
+    - caloriesBurned трябва да е положително число
+    - diffuclty трябва да е в интервала [1,5] (1 e лесно, а 5 е че нямада си усетиш краката)
+    # При невалидни параметри се хвърля InvalidWorkoutException, което е RuntimeException
+
+    Всички тези видове тренировки трябва да имплементират интерфейса (Workout):
+    # Трябва да е public sealed interface, който позволява само на CardioWorkout, StrengthWorkout и YogaSession да го имплементират
+    Този интерфейс има следните методи:
+    - String getName()
+    - int getDuration()
+    - int getCaloriesBurned()
+    - int getDifficulty() 
+    - WorkoutType getType()
+
+    Всяка тренировка се описва по следния тип: Има един WorkoutType, който е enum и има следните стойности:
+    - CARDIO
+    - STRENGTH
+    - YOGA 
+
+* WorkoutFilter 
+
+    Дадени трениворвки могат да се филтрират по различни критерии, като всички филтри имплементират интерфейса (WorkoutFilter)
+    Дадения интерфейс има следния метод:
+    - boolean matches(Workout workout) проверява дали даден workout може да мачва самият filter condition
+
+    Има няколко класове, които имлементират дадените филтри:
+    - NameWorkoutFilter
+    - DurationWorkoutFilter
+    - CaloresWorkoutFilter
+    - TypeWorkoutFilter
+
+    (NameWorkoutFilter)
+    # Сравнява за частично или пълно съвпадение на името на тренировката (substring matching)
+    Имаме един конструктор (public NameWorkoutFilter(String keyword, boolean caseSensitive)) като има два аргумент (keyword,caseSensitive), а ако (key) е null се хвърля IllegalArgumentException
+    
+    (DurationWorkoutFilter)
+    # проверява дали min <= duration < max
+    Имаме един конструктор (public DurationWorkoutFilter(int min, int max)) като има два аргумента (min,max - това е продължителността), ако (min > max) или (min < 0) или (max < 0) се хвърля IllegalArgumentException
+
+    (CaloriesWorkoutFilter)
+    # Има същата логика като DurationWorkoutFilter, Но става дума за калории
+    Имаме един конструктор (public CaloriesWorkoutFilter(int min, int max)) като има два аргумента, който са същите като в (DurationWorkoutFilter)
+
+    (TypeWorkoutFilter)
+    # Филтрира по тип като CARDIO, STRENGTH, YOGA
+    Имаме един публичен конструктр (public TypeWorkoutFilter(WorkoutType type)) като приема аргумент (type), ако той е  Null се хвърля IllegalArgumentException
+
