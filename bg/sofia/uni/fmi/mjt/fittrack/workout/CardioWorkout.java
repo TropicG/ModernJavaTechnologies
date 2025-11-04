@@ -2,6 +2,7 @@ package bg.sofia.uni.fmi.mjt.fittrack.workout;
 
 import bg.sofia.uni.fmi.mjt.fittrack.exception.InvalidWorkoutException;
 import java.lang.String;
+import java.util.Objects;
 
 public final record CardioWorkout(String name, int duration, int caloriesBurned, int difficulty) implements Workout{
 
@@ -52,5 +53,17 @@ public final record CardioWorkout(String name, int duration, int caloriesBurned,
     @Override
     public WorkoutType getType() {
         return workoutType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        CardioWorkout that = (CardioWorkout) o;
+        return Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name);
     }
 }

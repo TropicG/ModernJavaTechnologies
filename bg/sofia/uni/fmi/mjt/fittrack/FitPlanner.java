@@ -14,27 +14,55 @@ public class FitPlanner implements FitPlannerAPI {
         this.availableWorkouts = new ArrayList<>(availableWorkouts);
     }
 
+    public List<Workout> getSortedByDuration() {
+
+        Comparator<Workout> comparatorDuration = new Comparator<Workout>() {
+            @Override
+            public int compare(Workout o1, Workout o2){
+                return Integer.compare(o1.getDuration(), o2.getDuration());
+            }
+        };
+
+        List<Workout> sortedByDuration = new ArrayList<>(this.availableWorkouts);
+        sortedByDuration.sort(comparatorDuration);
+
+        return sortedByDuration;
+    }
+
     @Override
     public List<Workout> findWorkoutsByFilters(List<WorkoutFilter> filters) {
 
-        // Osven da obhodim vseki edin element ot nashite available workes i da mu prolojim vsichki filtri
+        List<Workout> passedWorkouts = new ArrayList<>();
 
-        return null;
+        for(Workout workout : availableWorkouts) {
+            for(WorkoutFilter filter : filters) {
+                if(!filter.matches(workout)) {
+                    continue;
+                }
+            }
+            passedWorkouts.add(workout);
+        }
+
+        return passedWorkouts;
     }
 
     //trqbva da maksimizirame izgorenite kalorii dokato mojem sme v totalMinutes
     @Override
     public List<Workout> generateOptimalWeeklyPlan(int totalMinutes) {
 
-        /*
+        List<Workout> sortedByDuration = getSortedByDuration();
 
-        30 min
+        int[][] calculatedWorkouts = new int[sortedByDuration.size() + 1][totalMinutes + 1];
 
-        (23,10) , (30,25), (15,20)
+        for(int i = 0; i <= totalMinutes; i++) {
+            calculatedWorkouts[0][i] = 0;
+        }
+
+        for(int i = 0; i <= sortedByDuration.size(); i++){
+            
+        }
 
 
-
-         */
 
 
         return null;
@@ -42,11 +70,18 @@ public class FitPlanner implements FitPlannerAPI {
 
     @Override
     public Map<WorkoutType, List<Workout>> getWorkoutsGroupedByType() {
-        //osven da grupiram po trenirovkite po tip
-        //toest obhojdam vsichkite trenirovki i gi postavqm v suotvetniq tip
-        // O(N)
+        Map<WorkoutType, List<Workout>> workoutsByType = new HashMap<>();
 
-        return null;
+        for(Workout workout : availableWorkouts) {
+            if(workoutsByType.containsKey(workout.getType())) {
+                workoutsByType.get(workout.getType()).add(workout);
+            }
+            else {
+                workoutsByType.put(workout.getType(), new ArrayList<>());
+                workoutsByType.get(workout.getType()).add(workout);
+            }
+        }
+        return workoutsByType;
     }
 
     @Override
