@@ -35,12 +35,18 @@ public class FitPlanner implements FitPlannerAPI {
         List<Workout> passedWorkouts = new ArrayList<>();
 
         for(Workout workout : availableWorkouts) {
+
+            boolean hasPassedAllFilters = true;
             for(WorkoutFilter filter : filters) {
                 if(!filter.matches(workout)) {
-                    continue;
+                    hasPassedAllFilters = false;
+                    break;
                 }
             }
-            passedWorkouts.add(workout);
+
+            if(hasPassedAllFilters) {
+                passedWorkouts.add(workout);
+            }
         }
 
         return passedWorkouts;
@@ -51,25 +57,45 @@ public class FitPlanner implements FitPlannerAPI {
     public List<Workout> generateOptimalWeeklyPlan(int totalMinutes) {
 
         List<Workout> sortedByDuration = getSortedByDuration();
+        int sizeSortedDuration = sortedByDuration.size();
 
         int[][] calculatedWorkouts = new int[sortedByDuration.size() + 1][totalMinutes + 1];
 
-        for(int i = 0; i <= totalMinutes; i++) {
-            calculatedWorkouts[0][i] = 0;
+        for(int col = 0; col <= totalMinutes; col++) {
+            calculatedWorkouts[0][col] = 0;
         }
 
-        for(int i = 0; i <= sortedByDuration.size(); i++){
-            
+        for(int row = 0; row <= sizeSortedDuration; row++){
+            calculatedWorkouts[row][0] = 0;
         }
 
+        for(int row = 1; row <= sortedByDuration.size(); row++) {
+            for(int column = 1; column <= totalMinutes; column++){
 
+                if(sortedByDuration.get(row - 1).getDuration() <= column ) {
 
+                    int currentDuration = sortedByDuration.get(row - 1).getDuration();
+                    int remainingMinutes = column - currentDuration;
+
+                    calculatedWorkouts[row][column] = currentDuration + calculatedWorkouts[row - 1][remainingMinutes];
+                }
+                else {
+                    calculatedWorkouts[row][column] = calculatedWorkouts[row -1 ][column];
+                }
+
+            }
+        }
+
+        for(Workout workout : sortedByDuration) {
+            System.out.println(workout);
+        }
 
         return null;
     }
 
     @Override
     public Map<WorkoutType, List<Workout>> getWorkoutsGroupedByType() {
+
         Map<WorkoutType, List<Workout>> workoutsByType = new HashMap<>();
 
         for(Workout workout : availableWorkouts) {
@@ -81,6 +107,7 @@ public class FitPlanner implements FitPlannerAPI {
                 workoutsByType.get(workout.getType()).add(workout);
             }
         }
+
         return workoutsByType;
     }
 
@@ -113,17 +140,11 @@ public class FitPlanner implements FitPlannerAPI {
         List<Workout> sortedByDifficulties = new ArrayList<>(this.availableWorkouts);
         sortedByDifficulties.sort(comparatorSortedByDifficulty);
 
-
         return sortedByDifficulties;
     }
 
     @Override
     public Set<Workout> getUnmodifiableWorkoutSet() {
-        return new HashSet<>(Collections.unmodifiableCollection(this.availableWorkouts));
+        return Set.copyOf(this.availableWorkouts);
     }
-
-
-
-
-
 }
