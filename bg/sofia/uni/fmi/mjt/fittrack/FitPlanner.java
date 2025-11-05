@@ -57,6 +57,8 @@ public class FitPlanner implements FitPlannerAPI {
     public List<Workout> generateOptimalWeeklyPlan(int totalMinutes) {
 
         List<Workout> sortedByDuration = getSortedByDuration();
+        List<Workout> chosenWorkout = new ArrayList<>();
+
         int sizeSortedDuration = sortedByDuration.size();
 
         int[][] calculatedWorkouts = new int[sortedByDuration.size() + 1][totalMinutes + 1];
@@ -69,15 +71,16 @@ public class FitPlanner implements FitPlannerAPI {
             calculatedWorkouts[row][0] = 0;
         }
 
+        /*
         for(int row = 1; row <= sortedByDuration.size(); row++) {
             for(int column = 1; column <= totalMinutes; column++){
 
-                if(sortedByDuration.get(row - 1).getDuration() <= column ) {
+                if((sortedByDuration.get(row - 1).getDuration() <= column) && (sortedByDuration.get(row - 1).getCaloriesBurned() >= calculatedWorkouts[row -1 ][column] )) {
 
                     int currentDuration = sortedByDuration.get(row - 1).getDuration();
                     int remainingMinutes = column - currentDuration;
 
-                    calculatedWorkouts[row][column] = currentDuration + calculatedWorkouts[row - 1][remainingMinutes];
+                    calculatedWorkouts[row][column] = sortedByDuration.get(row - 1).getCaloriesBurned() + calculatedWorkouts[row - 1][remainingMinutes];
                 }
                 else {
                     calculatedWorkouts[row][column] = calculatedWorkouts[row -1 ][column];
@@ -85,12 +88,58 @@ public class FitPlanner implements FitPlannerAPI {
 
             }
         }
+        */
 
-        for(Workout workout : sortedByDuration) {
-            System.out.println(workout);
+
+        // ako ne mojem da slojim item-a na suotvetnoto mqsto gledame s edin red nad nas
+        // ako mojem da slojim elementa proverqvame koe e po dobre :
+        // ili she slojim tozi nad nas (ako e po golqm) ili she slojim tekushtoto value + stoinostta na red predi tova i kolona ostavashta vuzmojnost za slagane
+        for(int row = 1; row <= sortedByDuration.size(); row++){
+            for(int col = 1; col <= totalMinutes; col++) {
+
+                //One row represents the current looked workout
+                Workout currentWorkout = sortedByDuration.get(row - 1);
+
+                //we do not take the workout, instead get the workout above
+                if(currentWorkout.getDuration() > col) {
+                    calculatedWorkouts[row][col] = calculatedWorkouts[row-1][col];
+                } // if we decide to take it
+                else {
+                    int newCalories = currentWorkout.getCaloriesBurned() + calculatedWorkouts[row -1 ][col - currentWorkout.getDuration()];
+                    int oldCalories = calculatedWorkouts[row - 1][col];
+
+                    calculatedWorkouts[row][col] = Integer.max(newCalories, oldCalories);
+                }
+
+            }
         }
 
-        return null;
+        int currentLookedIndex = totalMinutes;
+        for(int row = sortedByDuration.size(); row >= 1; row--) {
+
+            if(calculatedWorkouts[row][currentLookedIndex] != calculatedWorkouts[row-1][currentLookedIndex]) {
+                chosenWorkout.add(sortedByDuration.get(row -1));
+                currentLookedIndex = calculatedWorkouts[row][currentLookedIndex] - sortedByDuration.get(row -1).getCaloriesBurned();
+            }
+        }
+
+        /*
+        for(int row = sortedByDuration.size(); row >= 1; row--) {
+
+            if(calculatedWorkouts[row][totalMinutes] == 0) {
+                break;
+            }
+
+            if(calculatedWorkouts[row][totalMinutes] != calculatedWorkouts[row - 1][totalMinutes]){
+                chosenWorkout.add(sortedByDuration.get(row -1));
+            }
+        }
+        */
+
+
+
+
+        return chosenWorkout;
     }
 
     @Override
