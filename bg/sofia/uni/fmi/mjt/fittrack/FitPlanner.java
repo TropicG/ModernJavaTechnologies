@@ -8,12 +8,14 @@ import java.util.*;
 
 public class FitPlanner implements FitPlannerAPI {
 
+    //storing the workouts
     private final Collection<Workout> availableWorkouts;
 
     public FitPlanner(Collection<Workout> availableWorkouts) {
         this.availableWorkouts = new ArrayList<>(availableWorkouts);
     }
 
+    // sorting by accending order by duration
     public List<Workout> getSortedByDuration() {
 
         Comparator<Workout> comparatorDuration = new Comparator<Workout>() {
@@ -34,6 +36,7 @@ public class FitPlanner implements FitPlannerAPI {
 
         List<Workout> passedWorkouts = new ArrayList<>();
 
+        // checks all the workout and add only those who pass all the filters
         for(Workout workout : availableWorkouts) {
 
             boolean hasPassedAllFilters = true;
@@ -52,11 +55,10 @@ public class FitPlanner implements FitPlannerAPI {
         return passedWorkouts;
     }
 
-    //trqbva da maksimizirame izgorenite kalorii dokato mojem sme v totalMinutes
     @Override
     public List<Workout> generateOptimalWeeklyPlan(int totalMinutes) {
 
-        List<Workout> sortedByDuration = getSortedByDuration();
+        List<Workout> sortedByDuration = new ArrayList<>(this.availableWorkouts);
         List<Workout> chosenWorkout = new ArrayList<>();
 
         int sizeSortedDuration = sortedByDuration.size();
@@ -71,29 +73,6 @@ public class FitPlanner implements FitPlannerAPI {
             calculatedWorkouts[row][0] = 0;
         }
 
-        /*
-        for(int row = 1; row <= sortedByDuration.size(); row++) {
-            for(int column = 1; column <= totalMinutes; column++){
-
-                if((sortedByDuration.get(row - 1).getDuration() <= column) && (sortedByDuration.get(row - 1).getCaloriesBurned() >= calculatedWorkouts[row -1 ][column] )) {
-
-                    int currentDuration = sortedByDuration.get(row - 1).getDuration();
-                    int remainingMinutes = column - currentDuration;
-
-                    calculatedWorkouts[row][column] = sortedByDuration.get(row - 1).getCaloriesBurned() + calculatedWorkouts[row - 1][remainingMinutes];
-                }
-                else {
-                    calculatedWorkouts[row][column] = calculatedWorkouts[row -1 ][column];
-                }
-
-            }
-        }
-        */
-
-
-        // ako ne mojem da slojim item-a na suotvetnoto mqsto gledame s edin red nad nas
-        // ako mojem da slojim elementa proverqvame koe e po dobre :
-        // ili she slojim tozi nad nas (ako e po golqm) ili she slojim tekushtoto value + stoinostta na red predi tova i kolona ostavashta vuzmojnost za slagane
         for(int row = 1; row <= sortedByDuration.size(); row++){
             for(int col = 1; col <= totalMinutes; col++) {
 
@@ -119,25 +98,9 @@ public class FitPlanner implements FitPlannerAPI {
 
             if(calculatedWorkouts[row][currentLookedIndex] != calculatedWorkouts[row-1][currentLookedIndex]) {
                 chosenWorkout.add(sortedByDuration.get(row -1));
-                currentLookedIndex = calculatedWorkouts[row][currentLookedIndex] - sortedByDuration.get(row -1).getCaloriesBurned();
+                currentLookedIndex -= sortedByDuration.get(row - 1).getDuration();
             }
         }
-
-        /*
-        for(int row = sortedByDuration.size(); row >= 1; row--) {
-
-            if(calculatedWorkouts[row][totalMinutes] == 0) {
-                break;
-            }
-
-            if(calculatedWorkouts[row][totalMinutes] != calculatedWorkouts[row - 1][totalMinutes]){
-                chosenWorkout.add(sortedByDuration.get(row -1));
-            }
-        }
-        */
-
-
-
 
         return chosenWorkout;
     }
