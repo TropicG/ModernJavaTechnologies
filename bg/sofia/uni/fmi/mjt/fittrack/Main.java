@@ -10,6 +10,10 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) {
+
+        // NOTE REMEMBER YOU STILL NEED TO CHECK WHAT WE NEED TO DO REGARDING THE METHODS IN INTERFACES
+        // CHECK THE LAB TEXT FOR THIS HOMEWORK TO SEE WHAT TO OD
+        
         Workout cardioWorkout = new CardioWorkout("CardioWorkout",20,200,3);
         Workout strengthWorkout = new StrengthWorkout("StrengthWorkout", 30, 300, 5);
         Workout yogaWorkout = new YogaSession("YogaSession", 50, 100, 1);
