@@ -57,8 +57,8 @@ public class HumorousErgenka implements Ergenka {
         int bonus = 0;
 
         bonus += dateEvent.getDuration() >= 30 & dateEvent.getDuration() <= 90 ? 4 : 0;
-        bonus -= dateEvent.getDuration() < 30 ? -2 : 0;
-        bonus -= dateEvent.getDuration() > 90 ? -3 : 0;
+        bonus -= dateEvent.getDuration() < 30 ? 2 : 0;
+        bonus -= dateEvent.getDuration() > 90 ? 3 : 0;
 
         return bonus;
     }

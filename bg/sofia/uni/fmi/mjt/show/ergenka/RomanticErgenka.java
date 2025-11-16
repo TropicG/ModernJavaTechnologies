@@ -49,8 +49,8 @@ public class RomanticErgenka implements Ergenka {
     public void reactToDate(DateEvent dateEvent) {
         int bonus = calculateBonus(dateEvent);
 
-        rating += (int)((humorLevel * 7) / dateEvent.getTensionLevel());
-        rating += (int)(romanceLevel / 3);
+        rating += (int)((romanceLevel * 7) / dateEvent.getTensionLevel());
+        rating += (int)(humorLevel / 3);
         rating += bonus;
     }
 

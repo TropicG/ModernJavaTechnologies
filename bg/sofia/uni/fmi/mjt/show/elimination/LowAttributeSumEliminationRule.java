@@ -4,7 +4,7 @@ import bg.sofia.uni.fmi.mjt.show.ergenka.Ergenka;
 
 public class LowAttributeSumEliminationRule implements EliminationRule {
 
-    private int threshold;
+    private final int threshold;
 
     public LowAttributeSumEliminationRule(int threshold) {
         this.threshold = threshold;

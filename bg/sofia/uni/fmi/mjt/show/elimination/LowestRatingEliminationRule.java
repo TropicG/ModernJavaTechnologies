@@ -8,9 +8,9 @@ public class LowestRatingEliminationRule implements EliminationRule {
     public Ergenka[] eliminateErgenkas(Ergenka[] ergenkas) {
 
         Ergenka leastRating = ergenkas[0];
-        int toRemoveCount = 0;
+        int toRemoveCount = 0; // keeps track on the ergankas to be deleted in order to have accurate array
 
-        //gets the least rated ergenka as well as how much ergenkas are going to be remove
+        //gets the least rated ergenka as well as how much ergenkas are going to be removed
         for (Ergenka ergenka : ergenkas) {
             if (leastRating.getRating() > ergenka.getRating()) {
                 leastRating = ergenka;
@@ -26,12 +26,11 @@ public class LowestRatingEliminationRule implements EliminationRule {
         Ergenka[] ergenkasAfterElimination = new Ergenka[ergenkas.length - toRemoveCount];
         int afterElimationArrayIndex = 0;
         for (Ergenka ergenka : ergenkas) {
-            if (ergenka.getRating() == leastRating.getRating()) {
+            if (ergenka.getRating() != leastRating.getRating()) {
                 ergenkasAfterElimination[afterElimationArrayIndex++] = ergenka;
             }
         }
 
         return ergenkasAfterElimination;
     }
-
 }
