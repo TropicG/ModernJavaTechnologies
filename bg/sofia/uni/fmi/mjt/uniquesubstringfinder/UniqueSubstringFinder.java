@@ -36,13 +36,14 @@ public class UniqueSubstringFinder {
             }
             else {
 
+
                 // removing character before the duplicate as well as the duplicate
                 // imagine we are removing everything from the left side of the current substring until we meet and delete the dublicated letter
                 currentSubstring.delete(0, indexOfDublication + 1);
                 currentSubstring.append(str.charAt(i));
             }
 
-            if(currentSubstring.length() >= longestSubstring.length()) {
+            if(currentSubstring.length() > longestSubstring.length()) {
                 longestSubstring = currentSubstring.toString();
             }
 
@@ -62,6 +63,7 @@ public class UniqueSubstringFinder {
 
         for(int i = 0; i < str.length(); i++) {
 
+            // if the current character we are looking was not encountered
             if(!encounteredCharacters.contains(str.charAt(i))){
                 encounteredCharacters.add(str.charAt(i));
             }
@@ -84,6 +86,7 @@ public class UniqueSubstringFinder {
                 }
             }
 
+            // we use i + 1, since we want to include in the substring the character on the i index
             if(str.substring(startIndex, i + 1).length() > maximumSubstring.length()) {
                 maximumSubstring = str.substring(startIndex, i + 1);
             }
