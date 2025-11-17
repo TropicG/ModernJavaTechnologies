@@ -4,18 +4,26 @@ import bg.sofia.uni.fmi.mjt.show.date.DateEvent;
 
 public class HumorousErgenka implements Ergenka {
 
-    private String name;
-    private int romanceLevel;
-    private int humorLevel;
+    private final String name;
+    private final int romanceLevel;
+    private final int humorLevel;
     private int rating;
-    private short age;
+    private final short age;
 
     public HumorousErgenka(String name, short age, int romanticLevel, int humorLevel, int rating) {
-        this.name = name;
-        this.age = age;
-        this.romanceLevel = romanticLevel;
-        this.humorLevel = humorLevel;
-        this.rating = rating;
+        this.name = (name == null) ? "" : name; // all should have names
+        this.age = (age < 18) ? 18 : age; // minimum age for participating
+        this.romanceLevel = romanticLevel;  // the romance level cannot be below zero
+        this.humorLevel = humorLevel; // the humour level cannot be below zero
+        this.rating = rating; // the rating cannot be below zero
+    }
+
+    public HumorousErgenka(HumorousErgenka otherErgenka){
+        this.name = otherErgenka.getName();
+        this.romanceLevel = otherErgenka.getRomanceLevel();
+        this.humorLevel = otherErgenka.getHumorLevel();
+        this.rating = otherErgenka.getRating();
+        this.age = otherErgenka.getAge();
     }
 
     @Override
@@ -46,17 +54,14 @@ public class HumorousErgenka implements Ergenka {
 
     @Override
     public void reactToDate(DateEvent dateEvent) {
-        int bonus = calculateBonus(dateEvent);
-
-        rating += (int)((humorLevel * 5) / dateEvent.getTensionLevel());
-        rating += (int)(romanceLevel / 3);
-        rating += bonus;
+        rating += ((humorLevel * 5) / dateEvent.getTensionLevel());
+        rating += (int) Math.floor((double) romanceLevel / (double)3);
+        rating += calculateBonus(dateEvent);
     }
-
     private int calculateBonus(DateEvent dateEvent) {
         int bonus = 0;
 
-        bonus += dateEvent.getDuration() >= 30 & dateEvent.getDuration() <= 90 ? 4 : 0;
+        bonus += dateEvent.getDuration() >= 30 && dateEvent.getDuration() <= 90 ? 4 : 0;
         bonus -= dateEvent.getDuration() < 30 ? 2 : 0;
         bonus -= dateEvent.getDuration() > 90 ? 3 : 0;
 

@@ -4,20 +4,30 @@ import bg.sofia.uni.fmi.mjt.show.date.DateEvent;
 
 public class RomanticErgenka implements Ergenka {
 
-    private String name;
-    private String favDateLoc;
-    private int romanceLevel;
-    private int humorLevel;
+    private final String name;
+    private final String favDateLoc;
+    private final int romanceLevel;
+    private final int humorLevel;
     private int rating;
-    private short age;
+    private final short age;
 
     public RomanticErgenka(String name, short age, int romanticLevel, int humorLevel, int rating, String favDateLoc) {
-        this.name = name;
-        this.age = age;
+        this.name = (name == null) ? "Ergenka" : name; // all should have names
+        this.age = (age < 18) ? 18 : age; // minimum age for participating
         this.romanceLevel = romanticLevel;
         this.humorLevel = humorLevel;
-        this.rating = rating;
-        this.favDateLoc = favDateLoc;
+        this.rating = rating; // the rating cannot be below zero
+        this.favDateLoc = (favDateLoc == null || favDateLoc.isBlank()) ? "dinner with wine" : favDateLoc;
+        // since this ergenka will be romantic the default best date for here is dinner with wine
+    }
+
+    public RomanticErgenka(RomanticErgenka otherErgenka){
+        this.name = otherErgenka.getName();
+        this.romanceLevel = otherErgenka.getRomanceLevel();
+        this.humorLevel = otherErgenka.getHumorLevel();
+        this.rating = otherErgenka.getRating();
+        this.age = otherErgenka.getAge();
+        this.favDateLoc = otherErgenka.favDateLoc;
     }
 
     @Override
@@ -47,17 +57,15 @@ public class RomanticErgenka implements Ergenka {
 
     @Override
     public void reactToDate(DateEvent dateEvent) {
-        int bonus = calculateBonus(dateEvent);
-
-        rating += (int)((romanceLevel * 7) / dateEvent.getTensionLevel());
-        rating += (int)(humorLevel / 3);
-        rating += bonus;
+        rating += ( (romanceLevel * 7) / dateEvent.getTensionLevel());
+        rating += (int) Math.floor((double) humorLevel / 3);
+        rating += calculateBonus(dateEvent);
     }
 
     private int calculateBonus(DateEvent dateEvent) {
         int bonus = 0;
 
-        bonus += dateEvent.getLocation().equals(favDateLoc) ? 5 : 0;
+        bonus += dateEvent.getLocation().equalsIgnoreCase(favDateLoc) ? 5 : 0;
         bonus -= dateEvent.getDuration() < 30 ? 3 : 0;
         bonus -= dateEvent.getDuration() > 120 ? 2 : 0;
 

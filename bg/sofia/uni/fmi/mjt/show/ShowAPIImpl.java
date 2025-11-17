@@ -4,7 +4,6 @@ import bg.sofia.uni.fmi.mjt.show.date.DateEvent;
 import bg.sofia.uni.fmi.mjt.show.elimination.EliminationRule;
 import bg.sofia.uni.fmi.mjt.show.elimination.LowestRatingEliminationRule;
 import bg.sofia.uni.fmi.mjt.show.ergenka.Ergenka;
-import bg.sofia.uni.fmi.mjt.show.ergenka.HumorousErgenka;
 
 import java.util.Arrays;
 
@@ -14,9 +13,17 @@ public class ShowAPIImpl implements  ShowAPI{
     private final EliminationRule[] eliminationRules;
 
     public ShowAPIImpl(Ergenka[] ergenkas, EliminationRule[] defaultEliminationRules) {
-        ergenkas = Arrays.copyOf(ergenkas, ergenkas.length);
-        eliminationRules = Arrays.copyOf(defaultEliminationRules, defaultEliminationRules.length);
+
+        this.ergenkas = ergenkas;
+
+        if(defaultEliminationRules == null || defaultEliminationRules.length == 0) {
+            this.eliminationRules = new EliminationRule[]{new LowestRatingEliminationRule()};
+        }
+        else {
+            eliminationRules = defaultEliminationRules;
+        }
     }
+
 
     @Override
     public Ergenka[] getErgenkas() {
@@ -25,39 +32,53 @@ public class ShowAPIImpl implements  ShowAPI{
 
     @Override
     public void playRound(DateEvent dateEvent) {
-        for(Ergenka ergenka : ergenkas) {
-            organizeDate(ergenka, dateEvent);
+
+        if(dateEvent == null) {
+            return;
         }
-        eliminateErgenkas(this.eliminationRules);
+
+        if(ergenkas != null && ergenkas.length != 0) {
+
+            // all the ergenkas are going to a date
+            for(Ergenka ergenka : ergenkas) {
+                organizeDate(ergenka, dateEvent);
+            }
+
+            // eliminating the ergenkas based on the elimination rules
+            eliminateErgenkas(this.eliminationRules);
+        }
     }
 
     @Override
     public void eliminateErgenkas(EliminationRule[] eliminationRules){
 
-        if(eliminationRules == null) {
-            LowestRatingEliminationRule lowestRatingEliminationRule = new LowestRatingEliminationRule();
-            ergenkas = lowestRatingEliminationRule.eliminateErgenkas(ergenkas);
+        // if there aren't any elimination rules, by default the lowest rated ergenkas should be removed
+        if(eliminationRules == null || eliminationRules.length == 0) {
+            ergenkas = this.eliminationRules[0].eliminateErgenkas(ergenkas);
             return;
         }
 
-        for(EliminationRule eliminationRule : eliminationRules) {
-            ergenkas = eliminationRule.eliminateErgenkas(ergenkas);
+        if(ergenkas != null && ergenkas.length != 0) {
+            for(EliminationRule eliminationRule : eliminationRules) {
+                ergenkas = eliminationRule.eliminateErgenkas(ergenkas);
+
+                // all the ergenkas were eliminated based on the rules
+                if(ergenkas.length == 0) {
+                    return;
+                }
+            }
         }
     }
 
     @Override
     public void organizeDate(Ergenka ergenka, DateEvent dateEvent) {
+
+        // if the given ergenka is null the date will happen
+        if(ergenka == null) {
+            return;
+        }
+
+        // the ergenka goes on a date with the ergen
         ergenka.reactToDate(dateEvent);
-    }
-
-    public static void main(String[] args) {
-
-        Ergenka moqtaDeni = new HumorousErgenka("deni", (short)22, 4, 8, 100);
-
-        Ergenka shmatka1 = new HumorousErgenka("shmatka1", (short)23, 0, 2, 0);
-        Ergenka shmatka2 = new HumorousErgenka("shmatka2", (short)24, 0, 1, 0);
-
-
-
     }
 }
