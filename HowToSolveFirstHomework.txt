@@ -1,0 +1,129 @@
+* Главната идея
+
+    Ще трябва да се направи интелигентна платформа за търсене на работа, която използва алгоритми за съвпадение и анализ, за да свърже кандидатите с идеалните за тях позиции
+
+    Платформата ще поддържа:
+    - Регистрация на кандидати и потребители
+    - Публикуване на обяви
+    - Търсене на най-подходящи кандидати/обяви по зададена стратегия 
+    - Анализ на сходни профили и липсващи умения
+
+* JobMatchAPI
+
+    Следния интерфейс (JobMatchAPI) има следните функционалности:
+    - Candidate registerCandidate(Candidate candidate): регистрира кандидат в системата, а връща туко що регистрирания кандидат
+    - Employer registerEmployer(Employer employer): регистирира работодател в системата, а връща туко що регистрирания работодател
+    - JobPosting postJobPosting(JobPosting jobPosting): регистрира нова обява в системата, а връща туко що направената обява
+    - List<CandidateJobMatch> findTopNCandidatesForJob(String jobPostingId, int limit, SimilarityStrategy strategy): намира топ limit кандидати, подходящи за работата
+    # Кандидатите с нищо общо към обявата (тоест 0 similarities) не се вкарани в търсенето
+    # Мачването е базирано на приликите между уменията на кандидата и работните задължения и са калкулирани базирано на подадената strategy 
+    # Резилтатите са сортирани по similarities в низходен ред, докато ако има еднакакъв резултат ще се сортират по име (case-sensitive)
+    # Ако има кандидати под limit да се върнат всички, ако няма никой подходящ да се върне празен масива
+    # Този метод трябва да върне unmodifiable list 
+
+    - List<CandidateJobMatch> findTopNJobsForCandidate(String candidateEmail, int limit, SimilarityStrategy strategy): намира топ limit обяви, който имат общо с кандидата
+    # Обявите, които нямат нищо общо с кандидат не са вкарани в търсенето
+    # Мачването е базирано на приликите между уменията на кандидата и работните задължения и са калкулирани базирано на подадената strategy 
+    # Резилтатите са сортирани по similarities в низходен ред, докато ако има еднакакъв резултат ще се сортират по име (case-sensitive)
+    # Ако има обяви под limit да се върнат всички, ако няма никой подходящ да се върне празен масива
+    # Този метод трябва да върне unmodifiable list 
+
+    - List<CandidateSimilarityMatch> findSimilarCandidates(String candidateEmail, int limit, SimilarityStrategy strategy): намира кандидати с подобна професионни профили базирано на skills similarity
+    # Метода изчислява skill similirity базирано на подадения кандидат и всички други кандидати използвайки подадената стратегия
+    # Резултатите са similarity score в нисходен ред, а ако резултатите са еднаки ще са сортирани в азбучен ред (case-sensitive)
+    # Ако няма никакви сходни кандидати с подадения нищо да не се връща, а ако има и са под limit-a да се върнат 
+
+    - List<SkillRecommendation> getSkillRecommendationsForCandidate(String candidateEmail, int limit): дава skill recomendation за кандидат за да си подобрни job searching score-a
+    # този метод анализира всички отворени обяви в системата
+    # Алгоритъма работи по следния начин:
+    # 1. За всяка обява, да се изчисли колко similarity score има кандидата с нея
+
+    - PlatformStatistics getPlatformStatistics(): Връща статистика относно платформата
+    # дава броя на регистрираните кандидат, работодатели и общия брой на всички обявя както и името на skill-a, който се появява най-често във всички платформи
+    # Ако 
+    
+* Skill (Умения)
+
+    Следния (record) съдържа:
+    - String name (не трябва да е Null Или Blank)
+    - int level (0 няма опит, а 5 е експерт)
+    # Ако валидацията е неуспешна да се хвърли IllegalArgumentException
+
+* Candidate (Кандидат за работа)
+
+    Следния (клас) съдържа:
+    - String name (не трябва да е Null Или Blank)
+    - String email (не трябва да е Null Или Blank)
+    - Set<Skill> skils (не трябва да е null или empty)
+    - Education education 
+    - int yearsOfExperience (неотрицателни)
+    # Ако валидацията е неуспешна да се хвърли IllegalArgumentException
+
+* Employer (работодател)
+
+    Следния (record) съдържа:
+    - String companyName (не трябва да е Null Или Blank)
+    - String email (не трябва да е Null Или Blank)
+     # Ако валидацията е неуспешна да се хвърли IllegalArgumentException
+
+* JobPosting (Обява за работа)
+
+    Следния (клас) съдържа:
+    - String id (не трябва да е Null Или Blank)
+    - String title (не трябва да е Null Или Blank)
+    - String employerEmail (не трябва да е Null Или Blank)
+    - Set<Skill> requiredSkills (не трябва да е null или empty)
+    - Education requiredEducation 
+    - int requiredYearsOfExperience (трябва да е неотрицателно)
+    - double salary (трябва да е неотрицателно)
+     # Ако валидацията е неуспешна да се хвърли IllegalArgumentException
+
+* CandidateForMatch (Съвпадение кандидат-позиция)
+
+    Следния (клас) съдържа:
+    - Candidate candidate (ще гледаме да не е null)
+    - JobPosting jobPosting (ще гледаме да не е null)
+    - double similarityScore (трябва да е в интервала [0,1])
+    # Ако валидацията е неуспешна да се хвърли IllegalArgumentException
+
+* SkillsRecommendation (Препоръка за умение)
+
+    Следния (record) съдържа:
+    - String skillName (да не е null или blank)
+    - double improvementScore (неотрицателен)
+    # Ако валидацията е неуспешна да се хвърли IllegalArgumentException
+
+* Platform PlatformStatistics (Статистики на платформата)
+
+    Следния (record) съдържа:
+    - int totalCandidates (неотрицателно)
+    - int totalEmployers (неотрижателно)
+    - int totalJobPostings (неотррицателно)
+    - String mostCommonSkillName (да не е empty или blank)
+    - String highestPaidJobTitle (да не е empty или blank)
+
+* Education 
+
+    Същестуват няколко форми на образованието:
+    - HIGH_SCHOOL
+    - BACHELOR
+    - MASTERS
+    - PHD
+
+* Алгоритми за сходство
+
+    Ще има интерфейс (SimilarityStrategy), който ще се имплементира от:
+    - JaccardSimilarity
+    - CosineSimilarity
+    
+    Този интерфейс има само един метод:
+    - double calculateSimilarity(Set<Skill> candidateSkills, Set<Skill> jobSkills);
+    # Трябва да върне число между [0,1]
+
+* Jaccard Similarity 
+
+    Това е единият от двата класа, който трябва да имплементира (SimilarityStrategy), работи на този принцип
+    J(A, B) = |A ∩ B| / |A ∪ B| 
+    # Знака посредата е деление, тоест мощността на сечението делено на мощността на обединението
+    
+    Ако и двете множества са празни, тогава Jaccard = 0 

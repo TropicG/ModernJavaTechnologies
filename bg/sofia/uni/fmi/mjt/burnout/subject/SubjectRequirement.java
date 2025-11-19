@@ -8,4 +8,14 @@ package bg.sofia.uni.fmi.mjt.burnout.subject;
  * @throws IllegalArgumentException if the category is null
  * @throws IllegalArgumentException if the minAmountEnrolled is negative
  */
-public record SubjectRequirement(Category category, int minAmountEnrolled) {}
+public record SubjectRequirement(Category category, int minAmountEnrolled) {
+    public SubjectRequirement {
+        if(category == null) {
+            throw new IllegalArgumentException("Unproper data");
+        }
+
+        if(minAmountEnrolled < 0) {
+            throw new IllegalArgumentException("Unproper data");
+        }
+    }
+}

@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.burnout.semester;
 
+import bg.sofia.uni.fmi.mjt.burnout.exception.DisappointmentException;
 import bg.sofia.uni.fmi.mjt.burnout.plan.SemesterPlan;
 import bg.sofia.uni.fmi.mjt.burnout.subject.Category;
 import bg.sofia.uni.fmi.mjt.burnout.subject.SubjectRequirement;
@@ -29,7 +30,7 @@ public final class SoftwareEngineeringSemesterPlanner extends AbstractSemesterPl
             }
         }
 
-        //sorting
+        //sorting by credits, since we want to minimise the subjects we would like to attend
         UniversitySubject temp = null;
         for(int i = 0; i < subjectsForSemester.length; i++){
             for(int j = i; j < subjectsForSemester.length; j++) {
@@ -91,7 +92,7 @@ public final class SoftwareEngineeringSemesterPlanner extends AbstractSemesterPl
             boolean areAllCategoriesCovered =
                     (numMathSubjects == 0) && (numProgrammingSubjects == 0) && (numPracticalSubjects == 0) && (numTheorySubjects == 0);
 
-            if((currentCredits > semesterPlan.minimalAmountOfCredits()) || areAllCategoriesCovered) {
+            if(areAllCategoriesCovered) {
                 break;
             }
         }
@@ -112,7 +113,44 @@ public final class SoftwareEngineeringSemesterPlanner extends AbstractSemesterPl
             }
         }
 
+        UniversitySubject[] actualAttendingSubjects = new UniversitySubject[attendingIndex];
+        for(int i = 0; i < attendingIndex; i++){
+            actualAttendingSubjects[i] =  attendingSubjects[i];
+        }
+        return actualAttendingSubjects;
+    }
 
-        return attendingSubjects;
+    @Override
+    public int calculateJarCount(UniversitySubject[] subjects, int maximumSlackTime, int semesterDuration) {
+        int jarCount = 0;
+
+        int totalStudyDays = 0;
+        int totalSlackDays = 0;
+
+        for(UniversitySubject subject : subjects) {
+
+            double neededTimeForRest = 0.0;
+            switch(subject.category()){
+                case Category.MATH -> neededTimeForRest = 0.2;
+                case Category.PROGRAMMING -> neededTimeForRest = 0.1;
+                case Category.THEORY ->  neededTimeForRest = 0.15;
+                case Category.PRACTICAL -> neededTimeForRest = 0.05;
+            }
+
+            totalStudyDays += subject.neededStudyTime();
+            totalSlackDays += (int) Math.ceil((double)subject.neededStudyTime() * neededTimeForRest);
+
+            // in case you are slacking too much
+            if(totalSlackDays > maximumSlackTime) {
+                throw new DisappointmentException("You dissapointed baba");
+            }
+        }
+
+        jarCount += (int) totalStudyDays / 5;
+        if(totalStudyDays + totalSlackDays > semesterDuration) {
+            jarCount *= 2;
+        }
+
+        return jarCount;
     }
 }

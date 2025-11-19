@@ -3,7 +3,10 @@ package bg.sofia.uni.fmi.mjt.burnout.semester;
 //import bg.sofia.uni.fmi.mjt.burnout.exception.CryToStudentsDepartmentException;
 //import bg.sofia.uni.fmi.mjt.burnout.exception.DisappointmentException;
 //import bg.sofia.uni.fmi.mjt.burnout.exception.InvalidSubjectRequirementsException;
+import bg.sofia.uni.fmi.mjt.burnout.exception.DisappointmentException;
+import bg.sofia.uni.fmi.mjt.burnout.exception.InvalidSubjectRequirementsException;
 import bg.sofia.uni.fmi.mjt.burnout.plan.SemesterPlan;
+import bg.sofia.uni.fmi.mjt.burnout.subject.Category;
 import bg.sofia.uni.fmi.mjt.burnout.subject.UniversitySubject;
 import bg.sofia.uni.fmi.mjt.burnout.semester.AbstractSemesterPlanner;
 
@@ -18,7 +21,7 @@ public sealed interface SemesterPlannerAPI permits AbstractSemesterPlanner {
     // * @throws InvalidSubjectRequirementsException if the subjectRequirements contain duplicate categories
      * @return the subject list that balances credits, study time, and requirements
      */
-    UniversitySubject[] calculateSubjectList(SemesterPlan semesterPlan); //throws InvalidSubjectRequirementsException;
+    UniversitySubject[] calculateSubjectList(SemesterPlan semesterPlan) throws InvalidSubjectRequirementsException;
 
     /**
      * Calculates the amount of jars grandma will send you
@@ -32,8 +35,5 @@ public sealed interface SemesterPlannerAPI permits AbstractSemesterPlanner {
      * @return the number of jars grandma sends that are needed for survival
      */
 
-    //IMPORTANT NOTE: THIS IS NOT SUPPOSED TO BE DEFAULT METHOD
-    default int calculateJarCount(UniversitySubject[] subjects, int maximumSlackTime, int semesterDuration) {
-        return 0;
-    }
+    int calculateJarCount(UniversitySubject[] subjects, int maximumSlackTime, int semesterDuration);
 }

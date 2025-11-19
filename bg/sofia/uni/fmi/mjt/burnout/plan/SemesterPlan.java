@@ -14,4 +14,20 @@ import bg.sofia.uni.fmi.mjt.burnout.subject.UniversitySubject;
  * @throws IllegalArgumentException if the subjectRequirements array is null
  * @throws IllegalArgumentException if the minimalAmountOfCredits is negative
  */
-public record SemesterPlan(UniversitySubject[] subjects, SubjectRequirement[] subjectRequirements, int minimalAmountOfCredits) {}
+public record SemesterPlan(UniversitySubject[] subjects, SubjectRequirement[] subjectRequirements, int minimalAmountOfCredits) {
+
+    public SemesterPlan {
+        if(subjects == null) {
+            throw new IllegalArgumentException("Unproper data");
+        }
+
+        if(subjectRequirements == null) {
+            throw new IllegalArgumentException("Unproper data");
+        }
+
+        if(minimalAmountOfCredits < 0) {
+            throw new IllegalArgumentException("Unproper data");
+        }
+    }
+
+}
