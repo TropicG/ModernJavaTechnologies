@@ -60,6 +60,7 @@ public class PublicVoteEliminationRule implements EliminationRule {
 
         // how many ergenkas are going to be eliminated
         int eliminatedCount = 0;
+        boolean foundWhichErgenkaWillBeEliminated = false;
         for(int i = 0; i < numberOfCounts.length; i++){
 
             // if an ergenka is null it means automatic elimination
@@ -69,7 +70,10 @@ public class PublicVoteEliminationRule implements EliminationRule {
                 continue;
             }
 
-            if(numberOfCounts[i] >= eliminationThreshold) {
+            // we only need to remove one ergenka with majority vote, if we meet a second one with majority vote
+            // she wont be eliminated
+            if(numberOfCounts[i] >= eliminationThreshold && !foundWhichErgenkaWillBeEliminated) {
+                foundWhichErgenkaWillBeEliminated = true;
                 eliminatedCount++;
             }
         }

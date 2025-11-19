@@ -30,7 +30,7 @@ public class Main {
             System.out.println("Name of the ergenka *" +ergenka.getName() + "*");
         }
 
-        show.organizeDate(deni, null);
+
 
     }
 }
