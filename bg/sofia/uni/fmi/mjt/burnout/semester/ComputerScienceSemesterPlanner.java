@@ -1,87 +1,94 @@
 package bg.sofia.uni.fmi.mjt.burnout.semester;
 
 
-import bg.sofia.uni.fmi.mjt.burnout.exception.DisappointmentException;
+import bg.sofia.uni.fmi.mjt.burnout.exception.CryToStudentsDepartmentException;
+import bg.sofia.uni.fmi.mjt.burnout.exception.InvalidSubjectRequirementsException;
 import bg.sofia.uni.fmi.mjt.burnout.plan.SemesterPlan;
-import bg.sofia.uni.fmi.mjt.burnout.subject.Category;
+import bg.sofia.uni.fmi.mjt.burnout.subject.SubjectRequirement;
 import bg.sofia.uni.fmi.mjt.burnout.subject.UniversitySubject;
 
 public final class ComputerScienceSemesterPlanner extends AbstractSemesterPlanner {
 
-    @Override
-    public UniversitySubject[] calculateSubjectList(SemesterPlan semesterPlan) {
+    private int calcSubjectsToAttend(int minAmountCredits, UniversitySubject[] subjectsForSemester) {
+        // counting how many subjects we are going to apply
+        int currentCredits = 0;
+        int numberOfAttendenceSubjects = 0;
+        for (int i = 0; (currentCredits < minAmountCredits) && (i < subjectsForSemester.length); i++) {
 
-        // all the subjects that are in the semester plan
-        UniversitySubject[] subjectsForSemester = semesterPlan.subjects();
+            // skipping null values to prevent NullPointerException
+            if(subjectsForSemester[i] == null) {
+                continue;
+            }
 
-        // minimal amounts of credits that we will need to pass
-        int minAmountCredits = semesterPlan.minimalAmountOfCredits();
+            currentCredits += subjectsForSemester[i].rating();
+            numberOfAttendenceSubjects++;
+        }
 
+        // if the CS student still cannot cover his semester credists
+        if(currentCredits < minAmountCredits) {
+            throw new CryToStudentsDepartmentException("The CS student cannot cover his semester credits");
+        }
+
+        return numberOfAttendenceSubjects;
+    }
+
+    private void sortingSubjectsByRating(UniversitySubject[] subjectsForSemester) {
         //sorting by rating
         UniversitySubject temp = null;
         for(int i = 0; i < subjectsForSemester.length; i++){
-            for(int j = i; j < subjectsForSemester.length; j++) {
-                if(subjectsForSemester[i].rating() < subjectsForSemester[j].rating()) {
+            for(int j = i + 1; j < subjectsForSemester.length; j++) {
+
+                // there is a possibility that the array can have somewhere a null element
+                // NOTE: This swapping idea with null values were given to me by Gemini
+                boolean shouldSwap = false;
+
+                // if we find a null elements, it is treated as smaller always and pushed at the end of the array
+                if(subjectsForSemester[i] == null && subjectsForSemester[j] != null) {
+                    shouldSwap = true;
+                }
+                // proper swapping if both of the elements are not null
+                else if(subjectsForSemester[i] != null && subjectsForSemester[j] != null
+                && (subjectsForSemester[i].rating() < subjectsForSemester[j].rating())) {
+                    shouldSwap = true;
+                }
+
+                if(shouldSwap) {
                     temp = subjectsForSemester[i];
                     subjectsForSemester[i] = subjectsForSemester[j];
                     subjectsForSemester[j] = temp;
                 }
             }
         }
+    }
 
-        // counting how many subjects we are going to apply
-        int currentCredits = 0;
-        int numberOfAttendenceSubjects = 0;
-        for (int i = 0; currentCredits < minAmountCredits; i++) {
-            currentCredits += subjectsForSemester[i].rating();
-            numberOfAttendenceSubjects++;
+    @Override
+    public UniversitySubject[] calculateSubjectList(SemesterPlan semesterPlan) {
+
+        validatePassesSemesterPlan(semesterPlan);
+
+        // all the subjects that are in the semester plan
+        UniversitySubject[] subjectsForSemester = semesterPlan.subjects();
+        SubjectRequirement[] subjectRequirements = semesterPlan.subjectRequirements();
+
+        if(checkDuplicateSubjectReq(subjectRequirements)) {
+            throw new InvalidSubjectRequirementsException("For the Software Engineering student not proper subject requirements were passed");
         }
 
-        // these are the subjects that the computer scince student will attend this semester
-        UniversitySubject[] attendingSubjects = new UniversitySubject[numberOfAttendenceSubjects];
+        // minimal amounts of credits that we will need to pass
+        int minAmountCredits = semesterPlan.minimalAmountOfCredits();
 
-        for(int i = 0; i < numberOfAttendenceSubjects; i++) {
+        // for CS students it is important to attend the highest rated subjects, sorting in desc order
+        sortingSubjectsByRating(subjectsForSemester);
+
+        // counting how many subjects we are going to apply
+        int numberOfAttendingSubjects = calcSubjectsToAttend(minAmountCredits, subjectsForSemester);
+
+        // these are the subjects that the computer since student will attend this semester
+        UniversitySubject[] attendingSubjects = new UniversitySubject[numberOfAttendingSubjects];
+        for(int i = 0; i < numberOfAttendingSubjects; i++) {
             attendingSubjects[i] = subjectsForSemester[i];
         }
 
         return attendingSubjects;
     }
-
-    @Override
-    public int calculateJarCount(UniversitySubject[] subjects, int maximumSlackTime, int semesterDuration) {
-        int jarCount = 0;
-
-        int totalStudyDays = 0;
-        int totalSlackDays = 0;
-
-        for(UniversitySubject subject : subjects) {
-
-            double neededTimeForRest = 0.0;
-            switch(subject.category()){
-                case Category.MATH -> neededTimeForRest = 0.2;
-                case Category.PROGRAMMING -> neededTimeForRest = 0.1;
-                case Category.THEORY ->  neededTimeForRest = 0.15;
-                case Category.PRACTICAL -> neededTimeForRest = 0.05;
-            }
-
-            totalStudyDays += subject.neededStudyTime();
-            totalSlackDays += (int) Math.ceil((double)subject.neededStudyTime() * neededTimeForRest);
-
-            // in case you are slacking too much
-            if(totalSlackDays > maximumSlackTime) {
-                throw new DisappointmentException("You dissapointed baba");
-            }
-        }
-
-        jarCount += (int) totalStudyDays / 5;
-        if(totalStudyDays + totalSlackDays > semesterDuration) {
-            jarCount *= 2;
-        }
-
-        return jarCount;
-    }
-
-
-
-
 }
