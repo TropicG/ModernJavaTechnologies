@@ -8,15 +8,15 @@ public class DurationWorkoutFilter implements WorkoutFilter {
     private final int max;
 
     public DurationWorkoutFilter(int min, int max) {
-        if(max < 0) {
+        if (max < 0) {
             throw new IllegalArgumentException("Invalid keyword parameter for NameWorkoutFilter");
         }
 
-        if(min > max) {
+        if (min > max) {
             throw new IllegalArgumentException("Invalid keyword parameter for NameWorkoutFilter");
         }
 
-        if(min < 0) {
+        if (min < 0) {
             throw new IllegalArgumentException("Invalid keyword parameter for NameWorkoutFilter");
         }
 
@@ -27,7 +27,7 @@ public class DurationWorkoutFilter implements WorkoutFilter {
     @Override
     public boolean matches(Workout workout) {
 
-        if(workout == null) {
+        if (workout == null) {
             throw new IllegalArgumentException("The passes workout to duration workout filter cannot be null");
         }
 

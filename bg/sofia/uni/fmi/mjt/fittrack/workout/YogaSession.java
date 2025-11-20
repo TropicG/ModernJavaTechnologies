@@ -1,12 +1,15 @@
 package bg.sofia.uni.fmi.mjt.fittrack.workout;
 
 import bg.sofia.uni.fmi.mjt.fittrack.exception.InvalidWorkoutException;
-import java.lang.String;
 import java.util.Objects;
 
-public final class YogaSession implements Workout{
+public final class YogaSession implements Workout {
 
-    private final static WorkoutType workoutType;
+    private static final WorkoutType WORKOUT_TYPE;
+
+    private static final int MIN_DIFFICULTY = 1;
+    private static final int MAX_DIFFICULTY = 5;
+
 
     private final String name;
     private final int duration;
@@ -14,7 +17,7 @@ public final class YogaSession implements Workout{
     private final int difficulty;
 
     static {
-        workoutType = WorkoutType.YOGA;
+        WORKOUT_TYPE = WorkoutType.YOGA;
     }
 
     public YogaSession(String name, int duration, int caloriesBurned, int difficulty) {
@@ -26,19 +29,19 @@ public final class YogaSession implements Workout{
     }
 
     private static void validateParams(String name, int duration, int caloriesBurned, int difficulty) {
-        if(name == null || name.isBlank()) {
+        if (name == null || name.isBlank()) {
             throw new InvalidWorkoutException("Invalid argument for name of StrengthWorkout");
         }
 
-        if(duration <= 0) {
+        if (duration <= 0) {
             throw new InvalidWorkoutException("Invalid argument for duration of StrengthWorkout");
         }
 
-        if(caloriesBurned <= 0) {
+        if (caloriesBurned <= 0) {
             throw new InvalidWorkoutException("Invalid argument for calories burnt of StrengthWorkout");
         }
 
-        if(!(difficulty >= 1 && difficulty <= 5)) {
+        if (!(difficulty >= MIN_DIFFICULTY && difficulty <= MAX_DIFFICULTY)) {
             throw new InvalidWorkoutException("Invalid argument for difficulty of StrengthWorkout");
         }
     }
@@ -65,16 +68,16 @@ public final class YogaSession implements Workout{
 
     @Override
     public WorkoutType getType() {
-        return workoutType;
+        return WORKOUT_TYPE;
     }
 
     @Override
     public boolean equals(Object o) {
-        if(this == o) {
+        if (this == o) {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass()) {
+        if (o == null || this.getClass() != o.getClass()) {
             return false;
         }
 

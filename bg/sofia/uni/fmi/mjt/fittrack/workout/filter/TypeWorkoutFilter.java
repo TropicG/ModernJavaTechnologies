@@ -10,7 +10,7 @@ public class TypeWorkoutFilter implements WorkoutFilter {
     private final WorkoutType type;
 
     public TypeWorkoutFilter(WorkoutType type) {
-        if(type == null) {
+        if (type == null) {
             throw new IllegalArgumentException("Cannot initialise TypeWorkoutFilter with null value");
         }
 
@@ -19,7 +19,7 @@ public class TypeWorkoutFilter implements WorkoutFilter {
 
     @Override
     public boolean matches(Workout workout) {
-        if(workout == null) {
+        if (workout == null) {
             throw new IllegalArgumentException("Passed null value in matches function on TypeWorkoutFilter");
         }
 

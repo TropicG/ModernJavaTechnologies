@@ -2,21 +2,21 @@ package bg.sofia.uni.fmi.mjt.fittrack.workout.filter;
 
 import bg.sofia.uni.fmi.mjt.fittrack.workout.Workout;
 
-public class CaloriesWorkoutFilter implements WorkoutFilter{
+public class CaloriesWorkoutFilter implements WorkoutFilter {
 
     private final int min;
     private final int max;
 
     public CaloriesWorkoutFilter(int min, int max) {
-        if(max < 0) {
+        if (max < 0) {
             throw new IllegalArgumentException("Invalid keyword parameter for NameWorkoutFilter");
         }
 
-        if(min > max) {
+        if (min > max) {
             throw new IllegalArgumentException("Invalid keyword parameter for NameWorkoutFilter");
         }
 
-        if(min < 0) {
+        if (min < 0) {
             throw new IllegalArgumentException("Invalid keyword parameter for NameWorkoutFilter");
         }
 
@@ -27,7 +27,7 @@ public class CaloriesWorkoutFilter implements WorkoutFilter{
     @Override
     public boolean matches(Workout workout) {
 
-        if(workout == null) {
+        if (workout == null) {
             throw new IllegalArgumentException("The passes workout to duration workout filter cannot be null");
         }
 

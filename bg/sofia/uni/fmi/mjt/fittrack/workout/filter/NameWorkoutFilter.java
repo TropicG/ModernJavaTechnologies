@@ -8,7 +8,7 @@ public class NameWorkoutFilter implements WorkoutFilter {
     private final boolean caseSensitive;
 
     public NameWorkoutFilter(String keyword, boolean caseSensitive) {
-        if(keyword == null || keyword.isBlank()) {
+        if (keyword == null || keyword.isBlank()) {
             throw new IllegalArgumentException("Invalid keyword parameter for NameWorkoutFilter");
         }
 
@@ -19,19 +19,20 @@ public class NameWorkoutFilter implements WorkoutFilter {
     @Override
     public boolean matches(Workout workout) {
         // if null is passed, no match found
-        if(workout == null) {
+        if (workout == null) {
             return false;
         }
 
         String nameOfWorkOut = workout.getName();
 
         // substring matching with case sensitivity
-        if(caseSensitive) {
+        if (caseSensitive) {
             return nameOfWorkOut.contains(keyword);
         }
-        // substring matching without case sensitivity
         else {
+            // substring matching without case sensitivity
             return nameOfWorkOut.toLowerCase().contains(keyword.toLowerCase());
         }
+
     }
 }
