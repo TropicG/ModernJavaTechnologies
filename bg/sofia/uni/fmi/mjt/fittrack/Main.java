@@ -35,5 +35,12 @@ public class Main {
             System.out.println(workout);
         }
 
+        System.out.println("====================");
+
+        List<Workout> workoutsSortedByDifficulty = planner.getWorkoutsSortedByCalories();
+        for(Workout workout : workoutsSortedByDifficulty) {
+            System.out.println(workout);
+        }
+
     }
 }

@@ -5,18 +5,22 @@ import bg.sofia.uni.fmi.mjt.fittrack.workout.WorkoutType;
 
 import java.util.Objects;
 
-public record TypeWorkoutFilter(WorkoutType type) implements WorkoutFilter {
+public class TypeWorkoutFilter implements WorkoutFilter {
 
-    public TypeWorkoutFilter {
+    private final WorkoutType type;
+
+    public TypeWorkoutFilter(WorkoutType type) {
         if(type == null) {
-            throw new IllegalArgumentException("Invalid argument");
+            throw new IllegalArgumentException("Cannot initialise TypeWorkoutFilter with null value");
         }
+
+        this.type = type;
     }
 
     @Override
     public boolean matches(Workout workout) {
         if(workout == null) {
-            return false;
+            throw new IllegalArgumentException("Passed null value in matches function on TypeWorkoutFilter");
         }
 
         return Objects.equals(this.type, workout.getType());

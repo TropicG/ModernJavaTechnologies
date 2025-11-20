@@ -2,21 +2,34 @@ package bg.sofia.uni.fmi.mjt.fittrack.workout.filter;
 
 import bg.sofia.uni.fmi.mjt.fittrack.workout.Workout;
 
-public record NameWorkoutFilter(String keyword, boolean caseSensitive) implements WorkoutFilter {
+public class NameWorkoutFilter implements WorkoutFilter {
 
-    public NameWorkoutFilter {
+    private final String keyword;
+    private final boolean caseSensitive;
+
+    public NameWorkoutFilter(String keyword, boolean caseSensitive) {
         if(keyword == null || keyword.isBlank()) {
             throw new IllegalArgumentException("Invalid keyword parameter for NameWorkoutFilter");
         }
+
+        this.keyword = keyword;
+        this.caseSensitive = caseSensitive;
     }
 
     @Override
     public boolean matches(Workout workout) {
+        // if null is passed, no match found
+        if(workout == null) {
+            return false;
+        }
+
         String nameOfWorkOut = workout.getName();
 
+        // substring matching with case sensitivity
         if(caseSensitive) {
             return nameOfWorkOut.contains(keyword);
         }
+        // substring matching without case sensitivity
         else {
             return nameOfWorkOut.toLowerCase().contains(keyword.toLowerCase());
         }

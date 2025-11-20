@@ -8,10 +8,10 @@ public final class StrengthWorkout implements Workout {
 
     private final static WorkoutType workoutType;
 
-    private String name;
-    private int duration;
-    private int caloriesBurned;
-    private int difficulty;
+    private final String name;
+    private final int duration;
+    private final int caloriesBurned;
+    private final int difficulty;
 
     static {
         workoutType = WorkoutType.STRENGTH;
@@ -30,11 +30,11 @@ public final class StrengthWorkout implements Workout {
             throw new InvalidWorkoutException("Invalid argument for name of StrengthWorkout");
         }
 
-        if(duration < 0) {
+        if(duration <= 0) {
             throw new InvalidWorkoutException("Invalid argument for duration of StrengthWorkout");
         }
 
-        if(caloriesBurned < 0) {
+        if(caloriesBurned <= 0) {
             throw new InvalidWorkoutException("Invalid argument for calories burnt of StrengthWorkout");
         }
 

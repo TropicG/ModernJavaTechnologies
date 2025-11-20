@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.fittrack;
 
-//import bg.sofia.uni.fmi.mjt.fittrack.exception.OptimalPlanImpossibleException;
+import bg.sofia.uni.fmi.mjt.fittrack.exception.OptimalPlanImpossibleException;
 import bg.sofia.uni.fmi.mjt.fittrack.workout.Workout;
 import bg.sofia.uni.fmi.mjt.fittrack.workout.WorkoutType;
 import bg.sofia.uni.fmi.mjt.fittrack.workout.filter.WorkoutFilter;
@@ -31,10 +31,10 @@ public interface FitPlannerAPI {
      * @param totalMinutes total available time (in minutes) for workouts during the week
      * @return a list of optimally selected workouts, sorted by calories, then by difficulty, in descending order.
      *         Returns an empty list if totalMinutes is 0.
-     * @throws if a valid plan cannot be generated (e.g., all workouts exceed the time limit)
+     * @throws OptimalPlanImpossibleException if a valid plan cannot be generated (e.g., all workouts exceed the time limit)
      * @throws IllegalArgumentException       if totalMinutes is negative
      */
-    List<Workout> generateOptimalWeeklyPlan(int totalMinutes);
+    List<Workout> generateOptimalWeeklyPlan(int totalMinutes) throws OptimalPlanImpossibleException;
 
     /**
      * Groups all available workouts by type.
