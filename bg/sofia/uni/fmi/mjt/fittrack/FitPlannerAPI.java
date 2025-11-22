@@ -31,7 +31,7 @@ public interface FitPlannerAPI {
      * @param totalMinutes total available time (in minutes) for workouts during the week
      * @return a list of optimally selected workouts, sorted by calories, then by difficulty, in descending order.
      *         Returns an empty list if totalMinutes is 0.
-     * @throws OptimalPlanImpossibleException if a valid plan cannot be generated (e.g., all workouts exceed the time limit)
+     * @throws OptimalPlanImpossibleException if a valid plan cannot be generated
      * @throws IllegalArgumentException       if totalMinutes is negative
      */
     List<Workout> generateOptimalWeeklyPlan(int totalMinutes) throws OptimalPlanImpossibleException;

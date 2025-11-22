@@ -44,6 +44,52 @@ public class FitPlanner implements FitPlannerAPI {
         return sortedByDuration;
     }
 
+    private int[][] calcMatrixWithOptimalPlans(List<Workout> sortedByDuration, int totalMinutes) {
+        int[][] calculatedWorkouts = new int[sortedByDuration.size() + 1][totalMinutes + 1];
+
+        for (int col = 0; col <= totalMinutes; col++) {
+            calculatedWorkouts[0][col] = 0; }
+        for (int row = 0; row <= sortedByDuration.size(); row++) {
+            calculatedWorkouts[row][0] = 0; }
+
+        for (int row = 1; row <= sortedByDuration.size(); row++) {
+            for (int col = 1; col <= totalMinutes; col++) {
+                //One row represents the current looked workout
+                Workout currentWorkout = sortedByDuration.get(row - 1);
+
+                //we do not take the workout, instead get the workout above
+                if (currentWorkout.getDuration() > col) {
+                    calculatedWorkouts[row][col] = calculatedWorkouts[row - 1][col];
+                } else {
+                    // if we decide to take it
+                    int newCalories = currentWorkout.getCaloriesBurned() +
+                            calculatedWorkouts[row - 1 ][col - currentWorkout.getDuration()];
+                    int oldCalories = calculatedWorkouts[row - 1][col];
+
+                    calculatedWorkouts[row][col] = Integer.max(newCalories, oldCalories);
+                }
+
+            }
+        }
+        return calculatedWorkouts;
+    }
+
+    private List<Workout> getChosenWorkoutsForPlan(int[][] calculatedWorkouts,
+                                                   List<Workout> sortedByDuration, int totalMinutes) {
+        List<Workout> chosenWorkout = new ArrayList<>();
+        int currentLookedIndex = totalMinutes;
+        for (int row = sortedByDuration.size(); row >= 1; row--) {
+
+            // if on the above row we have a change, the item on row above is part of the optimal plan
+            if (calculatedWorkouts[row][currentLookedIndex] != calculatedWorkouts[row - 1][currentLookedIndex]) {
+                chosenWorkout.add(sortedByDuration.get(row - 1));
+                currentLookedIndex -= sortedByDuration.get(row - 1).getDuration();
+            }
+        }
+
+        return chosenWorkout;
+    }
+
     @Override
     public List<Workout> findWorkoutsByFilters(List<WorkoutFilter> filters) {
         if (filters == null) {
@@ -76,7 +122,6 @@ public class FitPlanner implements FitPlannerAPI {
 
     @Override
     public List<Workout> generateOptimalWeeklyPlan(int totalMinutes) {
-
         if (totalMinutes < 0) {
             throw new IllegalArgumentException("cannot generate plan when total minutes is false");
         }
@@ -87,53 +132,17 @@ public class FitPlanner implements FitPlannerAPI {
         }
 
         List<Workout> sortedByDuration = new ArrayList<>(this.availableWorkouts);
-        List<Workout> chosenWorkout = new ArrayList<>();
 
-        int sizeSortedDuration = sortedByDuration.size();
+        // we generated the matrix to see for how many minutes, which workouts we can do
+        int[][] calculatedWorkouts = calcMatrixWithOptimalPlans(sortedByDuration, totalMinutes);
 
-        int[][] calculatedWorkouts = new int[sortedByDuration.size() + 1][totalMinutes + 1];
-
-        for (int col = 0; col <= totalMinutes; col++) {
-            calculatedWorkouts[0][col] = 0; }
-
-        for (int row = 0; row <= sizeSortedDuration; row++) {
-            calculatedWorkouts[row][0] = 0; }
-
-        for (int row = 1; row <= sortedByDuration.size(); row++) {
-            for (int col = 1; col <= totalMinutes; col++) {
-
-                //One row represents the current looked workout
-                Workout currentWorkout = sortedByDuration.get(row - 1);
-
-                //we do not take the workout, instead get the workout above
-                if (currentWorkout.getDuration() > col) {
-                    calculatedWorkouts[row][col] = calculatedWorkouts[row - 1][col];}
-                // if we decide to take it
-                else {
-                    int newCalories = currentWorkout.getCaloriesBurned() + calculatedWorkouts[row - 1 ][col - currentWorkout.getDuration()];
-                    int oldCalories = calculatedWorkouts[row - 1][col];
-
-                    calculatedWorkouts[row][col] = Integer.max(newCalories, oldCalories);
-                }
-
-            }
-        }
-
+        // the most optimal plan can be found on those two indexes
         int optimalWeeklyPlan = calculatedWorkouts[sortedByDuration.size()][totalMinutes];
         if (optimalWeeklyPlan == 0) {
             throw new OptimalPlanImpossibleException("Plan impossible to create");
         }
 
-        int currentLookedIndex = totalMinutes;
-        for (int row = sortedByDuration.size(); row >= 1; row--) {
-
-            if (calculatedWorkouts[row][currentLookedIndex] != calculatedWorkouts[row - 1][currentLookedIndex]) {
-                chosenWorkout.add(sortedByDuration.get(row - 1));
-                currentLookedIndex -= sortedByDuration.get(row - 1).getDuration();
-            }
-        }
-
-        return chosenWorkout;
+        return getChosenWorkoutsForPlan(calculatedWorkouts, sortedByDuration, totalMinutes );
     }
 
     @Override
@@ -146,10 +155,9 @@ public class FitPlanner implements FitPlannerAPI {
 
             // if the workout type is present in the map, we add the workout directly to the list
             if (workoutsByType.containsKey(workout.getType())) {
-                workoutsByType.get(workout.getType()).add(workout);}
-
-            // if the workout type is not present, we add the workout type as a key and then add the workout to the list
-            else {
+                workoutsByType.get(workout.getType()).add(workout);
+            } else {
+                // if the workout type is not present, we add the workout type as a key and then add the workout
                 workoutsByType.put(workout.getType(), new ArrayList<>());
                 workoutsByType.get(workout.getType()).add(workout);
             }

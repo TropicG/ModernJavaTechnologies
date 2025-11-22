@@ -28,8 +28,7 @@ public class NameWorkoutFilter implements WorkoutFilter {
         // substring matching with case sensitivity
         if (caseSensitive) {
             return nameOfWorkOut.contains(keyword);
-        }
-        else {
+        } else {
             // substring matching without case sensitivity
             return nameOfWorkOut.toLowerCase().contains(keyword.toLowerCase());
         }
