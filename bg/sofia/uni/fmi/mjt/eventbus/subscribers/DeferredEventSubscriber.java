@@ -11,7 +11,24 @@ import java.util.Queue;
 
 public class DeferredEventSubscriber<T extends Event<?>> implements Subscriber<T>, Iterable<T> {
 
+    private static final Comparator<Event<?>> SORTED_BY_PRIORITY;
     List<T> allSavedEvents;
+
+    static {
+        // Events will be sorted based on their priority, otherwise their timestamps
+        SORTED_BY_PRIORITY = new Comparator<Event<?>>() {
+            @Override
+            public int compare(Event<?> o1, Event<?> o2) {
+
+                int comparisonByPriority = Integer.compare(o1.getPriority(), o2.getPriority());
+                if (comparisonByPriority == 0) {
+                    return o1.getTimestamp().compareTo(o2.getTimestamp());
+                }
+
+                return comparisonByPriority;
+            }
+        };
+    }
 
     public DeferredEventSubscriber() {
         allSavedEvents = new ArrayList<>();
@@ -26,7 +43,7 @@ public class DeferredEventSubscriber<T extends Event<?>> implements Subscriber<T
     @Override
     public void onEvent(T event) {
         if (event == null) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Event cannot be null");
         }
 
         allSavedEvents.add(event);
@@ -42,20 +59,7 @@ public class DeferredEventSubscriber<T extends Event<?>> implements Subscriber<T
     @Override
     public Iterator<T> iterator() {
 
-        Comparator<Event<?>> sortedByPriority = new Comparator<Event<?>>() {
-            @Override
-            public int compare(Event<?> o1, Event<?> o2) {
-
-                int comparisonByPriority = Integer.compare(o1.getPriority(), o2.getPriority());
-                if (comparisonByPriority == 0) {
-                    return o1.getTimestamp().compareTo(o2.getTimestamp());
-                }
-
-                return comparisonByPriority;
-            }
-        };
-
-        Queue<T> events = new PriorityQueue<>(sortedByPriority);
+        Queue<T> events = new PriorityQueue<>(SORTED_BY_PRIORITY);
         events.addAll(allSavedEvents);
 
         return events.iterator();
