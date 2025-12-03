@@ -1,67 +1,62 @@
 package bg.sofia.uni.fmi.mjt.imagekit.algorithm.detection;
 
 import bg.sofia.uni.fmi.mjt.imagekit.algorithm.ImageAlgorithm;
-import bg.sofia.uni.fmi.mjt.imagekit.algorithm.grayscale.GrayscaleAlgorithm;
-import bg.sofia.uni.fmi.mjt.imagekit.algorithm.grayscale.LuminosityGrayscale;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SobelEdgeDetection implements EdgeDetectionAlgorithm {
 
-    private static List<SobelCoordinate> Gx;
-    private static List<SobelCoordinate> Gy;
+    private static final List<SobelCoordinate> GX;
+    private static final List<SobelCoordinate> GY;
+    
 
-    ImageAlgorithm grayscaleAlgorithm;
+    private static final int NEG_TWO = -2;
+    private static final int TWO = 2;
+
+    private static final int TWO_BYTES = 16;
+    private static final int ONE_BYTE = 8;
+
+    private static final int MAX_8BITS = 255;
+
+    // representing on which coordinates the pixels are for Sobe algorithm, as well as their coefficient
+    private record SobelCoordinate(int x, int y, int coefficient) {
+    }
 
     static {
-        Gx = new ArrayList<>();
-        // Лява колона (x = -1)
-        Gx.add(new SobelCoordinate(-1, -1, -1));
-        Gx.add(new SobelCoordinate(-1,  0, -2));
-        Gx.add(new SobelCoordinate(-1,  1, -1));
-
-        // Средна колона (x = 0) -> Всичко е 0
-        Gx.add(new SobelCoordinate( 0, -1,  0));
-        Gx.add(new SobelCoordinate( 0,  0,  0));
-        Gx.add(new SobelCoordinate( 0,  1,  0));
-
-        // Дясна колона (x = 1)
-        Gx.add(new SobelCoordinate( 1, -1,  1));
-        Gx.add(new SobelCoordinate( 1,  0,  2));
-        Gx.add(new SobelCoordinate( 1,  1,  1));
-
-        Gy = new ArrayList<>();
-        //first row
-        // Горен ред (y = -1)
-        Gy.add(new SobelCoordinate(-1, -1, -1));
-        Gy.add(new SobelCoordinate( 0, -1, -2));
-        Gy.add(new SobelCoordinate( 1, -1, -1));
-
-        // Среден ред (y = 0) -> Всичко е 0
-        Gy.add(new SobelCoordinate(-1,  0,  0));
-        Gy.add(new SobelCoordinate( 0,  0,  0));
-        Gy.add(new SobelCoordinate( 1,  0,  0));
-
-        // Долен ред (y = 1)
-        Gy.add(new SobelCoordinate(-1,  1,  1));
-        Gy.add(new SobelCoordinate( 0,  1,  2));
-        Gy.add(new SobelCoordinate( 1,  1,  1));
+        GX = new ArrayList<>();
+        // left column
+        GX.add(new SobelCoordinate(-1, -1, -1));
+        GX.add(new SobelCoordinate(-1, 0, NEG_TWO));
+        GX.add(new SobelCoordinate(-1, 1, -1));
+        // central column
+        GX.add(new SobelCoordinate(0, -1, 0));
+        GX.add(new SobelCoordinate(0, 0, 0));
+        GX.add(new SobelCoordinate(0, 1, 0));
+        // right column
+        GX.add(new SobelCoordinate(1, -1, 1));
+        GX.add(new SobelCoordinate(1, 0, TWO));
+        GX.add(new SobelCoordinate(1, 1, 1));
     }
 
-    private boolean isValidLocation(int x, int y, SobelCoordinate sobelCoordinate, int picWidth, int picHeight) {
-
-        if((x + sobelCoordinate.x() > (picWidth - 1)) || (x + sobelCoordinate.x() < 0)) {
-            return false;
-        }
-        else if((y + sobelCoordinate.y() > (picHeight - 1)) || (y + sobelCoordinate.y() < 0)) {
-            return false;
-        }
-
-        return true;
+    static {
+        GY = new ArrayList<>();
+        // left row
+        GY.add(new SobelCoordinate(-1, -1, -1));
+        GY.add(new SobelCoordinate(0, -1, NEG_TWO));
+        GY.add(new SobelCoordinate(1, -1, -1));
+        // central row
+        GY.add(new SobelCoordinate(-1, 0, 0));
+        GY.add(new SobelCoordinate(0, 0, 0));
+        GY.add(new SobelCoordinate(1, 0, 0));
+        // right row
+        GY.add(new SobelCoordinate(-1, 1, 1));
+        GY.add(new SobelCoordinate(0, 1, TWO));
+        GY.add(new SobelCoordinate(1, 1, 1));
     }
+
+    ImageAlgorithm grayscaleAlgorithm;
 
     public SobelEdgeDetection(ImageAlgorithm grayscaleAlgorithm) {
         this.grayscaleAlgorithm = grayscaleAlgorithm;
@@ -69,8 +64,7 @@ public class SobelEdgeDetection implements EdgeDetectionAlgorithm {
 
     @Override
     public BufferedImage process(BufferedImage image) {
-
-        if(image == null) {
+        if (image == null) {
             throw new IllegalArgumentException();
         }
 
@@ -81,45 +75,59 @@ public class SobelEdgeDetection implements EdgeDetectionAlgorithm {
         int width = sobelEdgeImage.getWidth();
         int height = sobelEdgeImage.getHeight();
 
-        for(int w = 1; w < width - 1; w++){
-            for(int h = 1; h < height - 1; h++){
-
-                int totalGx = 0;
-                int totalGy = 0;
-                // calculating Gx
-
-                for(int coordinates = 0; coordinates < Gx.size(); coordinates++){
-                    // calc Gx
-                    if(isValidLocation(w,h, Gx.get(coordinates), width, height)) {
-                        int pixelAtPosition = grayScaledImage.getRGB(w + Gx.get(coordinates).x(), h + Gx.get(coordinates).y());
-                        int color = (pixelAtPosition >> 16) & 0xFF;
-                        totalGx += (color * Gx.get(coordinates).coefficient());
-                    }
-                    else {
-                        totalGx += 0;
-                    }
-
-                    // calc Gy
-                    if(isValidLocation(w,h, Gy.get(coordinates), width, height)) {
-                        int pixelAtPosition = grayScaledImage.getRGB( w + Gy.get(coordinates).x(), h + Gy.get(coordinates).y());
-                        int color = (pixelAtPosition >> 16) & 0xFF;
-                        totalGy += (color * Gy.get(coordinates).coefficient());
-                    }
-                    else {
-                        totalGy += 0;
-                    }
-                }
-
-                double totalG = Math.sqrt(Math.pow(totalGx, 2) + Math.pow(totalGy, 2));
-                int newPixelValue = Math.min(255, (int)Math.round(totalG));
-                int newRg = (newPixelValue << 16) | (newPixelValue << 8) | newPixelValue;
-                sobelEdgeImage.setRGB(w,h, newRg);
+        // for every pixel, calculating Gx and Gy (coeficient with neighrbos), total G and generating the new PixelValue
+        // after that the new generated rgb is going to be set for Red Green and Blue for the pixel
+        for (int w = 1; w < width - 1; w++) {
+            for (int h = 1; h < height - 1; h++) {
+                int totalGx = calculateGx(w, h, width, height, grayScaledImage);
+                int totalGy = calculateGy(w, h, width, height, grayScaledImage);
+                double totalG = Math.sqrt((totalGx * totalGx) + (totalGy * totalGy));
+                int newPixelValue = Math.min(MAX_8BITS, (int) Math.round(totalG));
+                int newRGB = (newPixelValue << TWO_BYTES) | (newPixelValue << ONE_BYTE) | newPixelValue;
+                sobelEdgeImage.setRGB(w, h, newRGB);
             }
         }
-
         return sobelEdgeImage;
     }
 
-    public static record SobelCoordinate(int x, int y, int coefficient) {
+    private int calculateGx(int w, int h, int width, int height, BufferedImage grayScaledImage) {
+        // calc Gx for every around neighbor for the given pixel
+        int totalGx = 0;
+        for (SobelCoordinate gx : GX) {
+            if (isValidLocation(w, h, gx, width, height)) {
+                int pixelAtPosition = grayScaledImage.getRGB(w + gx.x(), h + gx.y());
+                int color = (pixelAtPosition >> TWO_BYTES) & MAX_8BITS;
+                totalGx += (color * gx.coefficient());
+            } else {
+                totalGx += 0;
+            }
+        }
+        return totalGx;
+    }
+
+    private int calculateGy(int w, int h, int width, int height, BufferedImage grayScaledImage) {
+        // calc Gy for every around neighbor for the given pixel
+        int totalGy = 0;
+        for (int coordinates = 0; coordinates < GX.size(); coordinates++) {
+            if (isValidLocation(w, h, GY.get(coordinates), width, height)) {
+                int pixelAtPosition = grayScaledImage.getRGB(
+                        w + GY.get(coordinates).x(), h + GY.get(coordinates).y());
+                int color = (pixelAtPosition >> TWO_BYTES) & MAX_8BITS;
+                totalGy += (color * GY.get(coordinates).coefficient());
+            } else {
+                totalGy += 0;
+            }
+        }
+        return totalGy;
+    }
+
+    private boolean isValidLocation(int x, int y, SobelCoordinate sobelCoordinate, int picWidth, int picHeight) {
+        // in case of trying to access something out of pixel box for the image, false is returned
+        if ((x + sobelCoordinate.x() > (picWidth - 1)) || (x + sobelCoordinate.x() < 0)) {
+            return false;
+        } else if ((y + sobelCoordinate.y() > (picHeight - 1)) || (y + sobelCoordinate.y() < 0)) {
+            return false;
+        }
+        return true;
     }
 }

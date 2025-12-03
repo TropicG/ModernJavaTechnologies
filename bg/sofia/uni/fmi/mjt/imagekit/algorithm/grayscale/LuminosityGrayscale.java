@@ -4,29 +4,16 @@ import java.awt.image.BufferedImage;
 
 public class LuminosityGrayscale implements GrayscaleAlgorithm {
 
-    private static final int ONE_BYTE;
-    private static final int TWO_BYTES;
+    private static final int ONE_BYTE = 8;
+    private static final int TWO_BYTES = 16;
 
-    private static final int MAX_BYTE;
+    private static final int MAX_BYTE = 0xFF;
 
-    private static final double RED_COEF;
-    private static final double GREEN_COEF;
-    private static final double BLUE_COEF;
-
-    static {
-        ONE_BYTE = 8;
-        TWO_BYTES = 16;
-
-        MAX_BYTE = 0xFF;
-
-        RED_COEF = 0.21d;
-        GREEN_COEF = 0.72d;
-        BLUE_COEF = 0.07d;
-    }
-
+    private static final double RED_COEF = 0.21d;
+    private static final double GREEN_COEF = 0.72d;
+    private static final double BLUE_COEF = 0.07d;
 
     private int calculateLuminosity(int currentPixel) {
-
         // getting the Red, Green, Blue color
         int red = (currentPixel >> TWO_BYTES) & MAX_BYTE;
         int green = (currentPixel >> ONE_BYTE) & MAX_BYTE;
@@ -40,7 +27,7 @@ public class LuminosityGrayscale implements GrayscaleAlgorithm {
     @Override
     public BufferedImage process(BufferedImage image) {
 
-        if(image == null) {
+        if (image == null) {
             throw new IllegalArgumentException();
         }
 
@@ -48,7 +35,7 @@ public class LuminosityGrayscale implements GrayscaleAlgorithm {
         int height = image.getHeight();
 
         // the new grey pic will appear here
-        BufferedImage greyPic = new BufferedImage(width,height, BufferedImage.TYPE_INT_RGB);
+        BufferedImage greyPic = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
         // the pic is based on 2d array with widht x height size, each pixel is element in this array
         for (int x = 0; x < width; x++) {
