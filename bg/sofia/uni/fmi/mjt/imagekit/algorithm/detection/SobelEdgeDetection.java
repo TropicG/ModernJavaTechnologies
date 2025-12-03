@@ -10,7 +10,7 @@ public class SobelEdgeDetection implements EdgeDetectionAlgorithm {
 
     private static final List<SobelCoordinate> GX;
     private static final List<SobelCoordinate> GY;
-    
+
 
     private static final int NEG_TWO = -2;
     private static final int TWO = 2;
@@ -94,40 +94,23 @@ public class SobelEdgeDetection implements EdgeDetectionAlgorithm {
         // calc Gx for every around neighbor for the given pixel
         int totalGx = 0;
         for (SobelCoordinate gx : GX) {
-            if (isValidLocation(w, h, gx, width, height)) {
-                int pixelAtPosition = grayScaledImage.getRGB(w + gx.x(), h + gx.y());
-                int color = (pixelAtPosition >> TWO_BYTES) & MAX_8BITS;
-                totalGx += (color * gx.coefficient());
-            } else {
-                totalGx += 0;
-            }
+            int pixelAtPosition = grayScaledImage.getRGB(w + gx.x(), h + gx.y());
+            int color = (pixelAtPosition >> TWO_BYTES) & MAX_8BITS;
+            totalGx += (color * gx.coefficient());
         }
+
         return totalGx;
     }
 
     private int calculateGy(int w, int h, int width, int height, BufferedImage grayScaledImage) {
         // calc Gy for every around neighbor for the given pixel
         int totalGy = 0;
-        for (int coordinates = 0; coordinates < GX.size(); coordinates++) {
-            if (isValidLocation(w, h, GY.get(coordinates), width, height)) {
-                int pixelAtPosition = grayScaledImage.getRGB(
-                        w + GY.get(coordinates).x(), h + GY.get(coordinates).y());
-                int color = (pixelAtPosition >> TWO_BYTES) & MAX_8BITS;
-                totalGy += (color * GY.get(coordinates).coefficient());
-            } else {
-                totalGy += 0;
-            }
+        for (SobelCoordinate gy : GY) {
+            int pixelAtPosition = grayScaledImage.getRGB(w + gy.x(), h + gy.y());
+            int color = (pixelAtPosition >> TWO_BYTES) & MAX_8BITS;
+            totalGy += (color * gy.coefficient());
         }
-        return totalGy;
-    }
 
-    private boolean isValidLocation(int x, int y, SobelCoordinate sobelCoordinate, int picWidth, int picHeight) {
-        // in case of trying to access something out of pixel box for the image, false is returned
-        if ((x + sobelCoordinate.x() > (picWidth - 1)) || (x + sobelCoordinate.x() < 0)) {
-            return false;
-        } else if ((y + sobelCoordinate.y() > (picHeight - 1)) || (y + sobelCoordinate.y() < 0)) {
-            return false;
-        }
-        return true;
+        return totalGy;
     }
 }

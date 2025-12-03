@@ -27,7 +27,7 @@ public class LuminosityGrayscaleTest {
         LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
 
         File expectedGrayscaleImage = new File("swampert-grayscale.png");
-        File inputGrayscaleImage = new File("Swampert.png");
+        File inputGrayscaleImage = new File("swampert.png");
 
         BufferedImage inputImage = localFileSystemImageManager.loadImage(inputGrayscaleImage);
         BufferedImage expectedImage = localFileSystemImageManager.loadImage(expectedGrayscaleImage);
@@ -39,7 +39,6 @@ public class LuminosityGrayscaleTest {
     }
 
     private boolean compareBufferedImages(BufferedImage bufferedOne, BufferedImage bufferedTwo) {
-
         if(!(bufferedOne.getWidth() == bufferedTwo.getWidth() && bufferedOne.getHeight() == bufferedTwo.getHeight())){
             return false;
         }
@@ -47,8 +46,8 @@ public class LuminosityGrayscaleTest {
         int totalWidth = bufferedOne.getWidth();
         int totalHeight = bufferedTwo.getHeight();
 
-        for(int x = 0; x < totalHeight; x++) {
-            for(int y = 0; y < totalWidth; y++) {
+        for(int x = 0; x < totalWidth; x++) {
+            for(int y = 0; y < totalHeight; y++) {
                 if(bufferedOne.getRGB(x,y) != bufferedTwo.getRGB(x,y)) {
                     return false;
                 }
