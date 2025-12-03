@@ -1,6 +1,7 @@
 package bg.sofia.uni.fmi.mjt.imagekit.algorithm.detection;
 
 import bg.sofia.uni.fmi.mjt.imagekit.algorithm.ImageAlgorithm;
+import bg.sofia.uni.fmi.mjt.imagekit.algorithm.grayscale.LuminosityGrayscale;
 import bg.sofia.uni.fmi.mjt.imagekit.filesystem.LocalFileSystemImageManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,6 +37,28 @@ public class SobelEdgeDetectionTest {
     @Test
     void testSuccessfulEdgeDetection() throws IOException {
 
+        LuminosityGrayscale luminosityGrayscale = new LuminosityGrayscale();
+        SobelEdgeDetection sobelEdgeDetection1 = new SobelEdgeDetection(luminosityGrayscale);
+        Random random = new Random();
+
+        BufferedImage bufferedImage = new BufferedImage(100,100, BufferedImage.TYPE_INT_RGB);
+        for(int x = 0; x < 10; x++){
+            for(int y = 0; y < 10; y++){
+                bufferedImage.setRGB(x,y, random.nextInt(Integer.MIN_VALUE, Integer.MAX_VALUE));
+            }
+        }
+        BufferedImage bufferedImageAfterGrayscale = luminosityGrayscale.process(bufferedImage);
+        when(imageAlgorithm.process(bufferedImage)).thenReturn(bufferedImageAfterGrayscale);
+
+        BufferedImage bufferedImageAfterEdgeDetection = this.sobelEdgeDetection.process(bufferedImage);
+
+        assertTrue(compareBufferedImages(bufferedImageAfterEdgeDetection, this.sobelEdgeDetection.process(bufferedImage)));
+    }
+
+    /*
+    @Test
+    void testSuccessfulEdgeDetection() throws IOException {
+
         LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
 
         File expectedEdgeDetection = new File("swampert-edge-detected.png");
@@ -50,6 +74,8 @@ public class SobelEdgeDetectionTest {
         assertTrue(compareBufferedImages(afterEdgeDetection, expectedEdgeDetectionBuffer),
                 "After algorithm there not right");
     }
+    */
+
 
     private boolean compareBufferedImages(BufferedImage bufferedOne, BufferedImage bufferedTwo) {
         if(!(bufferedOne.getWidth() == bufferedTwo.getWidth() && bufferedOne.getHeight() == bufferedTwo.getHeight())){

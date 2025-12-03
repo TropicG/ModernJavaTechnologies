@@ -8,10 +8,13 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -36,36 +39,45 @@ public class LocalFileSystemImageManagerTest {
     }
 
     @Test
-    void testDirectoryPassedForLoadingImage() {
+    void testDirectoryPassedForLoadingImage() throws IOException {
         LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
-        File directory = new File("test" + File.separator);
-        assertThrows(IOException.class, () -> localFileSystemImageManager.loadImage(directory),
-                "When a directory is passed for loading, IOException shall be thrown");
-    }
-
-    @Test
-    void testSymbolicLinkPassedForLoadingShallThrowIOException() throws IOException {
-        LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
-        Path link = Path.of("swampert-symbolic-link.png");
-        Path target = Path.of("swampert.png");
+        Path tempDir = Files.createTempDirectory("tempDir");
 
         try {
-            Files.createSymbolicLink(link, target);
-            assertThrows(IOException.class, () -> localFileSystemImageManager.loadImage(link.toFile()),
-                    "When a symbolic link is passed for loading, IOException shall be thrown");
+            assertThrows(IOException.class, () -> localFileSystemImageManager.loadImage(tempDir.toFile()),
+                    "IOException shall be thrown when directory is given to loading image");
         } finally {
-            Files.delete(link);
+            Files.deleteIfExists(tempDir);
         }
     }
 
     @Test
-    void testUnsupportedLoadingReturnsException() throws IOException {
+    void testLoadingSymbolicLinkFileThrowsException() throws IOException {
+
+        LocalFileSystemImageManager manager = new LocalFileSystemImageManager();
+
+        Path targetFile = Files.createTempFile("realImage", ".png");
+        Path linkPath = targetFile.getParent().resolve("myLink.png");
+
+        Files.createSymbolicLink(linkPath, targetFile);
+
+        try {
+            assertThrows(IOException.class,
+                    () -> manager.loadImage(linkPath.toFile()),
+                    "Should throw IOException when loading from a symbolic link");
+        } finally {
+            Files.deleteIfExists(linkPath);
+            Files.deleteIfExists(targetFile);
+        }
+    }
+
+
+    @Test
+    void testUnsupportedLoadingThrowsException() throws IOException {
 
         LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
 
         Path unsupportedPath = Path.of("schedule.txt");
-
-        Files.deleteIfExists(unsupportedPath);
         Files.createFile(unsupportedPath);
 
         try {
@@ -79,10 +91,61 @@ public class LocalFileSystemImageManagerTest {
     @Test
     void testLoadingPNG() throws IOException {
         LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
-        File swampert = new File("swampert.png");
 
-        BufferedImage swampertBufferd = ImageIO.read(swampert);
-        assertTrue(compareBufferedImages(swampertBufferd, localFileSystemImageManager.loadImage(swampert)));
+        BufferedImage pngImage = new BufferedImage(10,10, BufferedImage.TYPE_INT_RGB);
+        File pngFile = File.createTempFile("test-image", ".png");
+        ImageIO.write(pngImage, "png", pngFile);
+
+        try {
+            assertTrue(compareBufferedImages(pngImage, localFileSystemImageManager.loadImage(pngFile)));
+        } finally {
+            Files.deleteIfExists(pngFile.toPath());
+        }
+    }
+
+    @Test
+    void testLoadingJPEG() throws IOException {
+        LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
+
+        BufferedImage pngImage = new BufferedImage(10,10, BufferedImage.TYPE_INT_RGB);
+        File pngFile = File.createTempFile("test-image", ".jpeg");
+        ImageIO.write(pngImage, "jpeg", pngFile);
+
+        try {
+            assertTrue(compareBufferedImages(pngImage, localFileSystemImageManager.loadImage(pngFile)));
+        } finally {
+            Files.deleteIfExists(pngFile.toPath());
+        }
+    }
+
+    @Test
+    void testLoadingBMP() throws IOException {
+        LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
+
+        BufferedImage pngImage = new BufferedImage(10,10, BufferedImage.TYPE_INT_RGB);
+        File pngFile = File.createTempFile("test-image", ".bmp");
+        ImageIO.write(pngImage, "bmp", pngFile);
+
+        try {
+            assertTrue(compareBufferedImages(pngImage, localFileSystemImageManager.loadImage(pngFile)));
+        } finally {
+            Files.deleteIfExists(pngFile.toPath());
+        }
+    }
+
+    @Test
+    void testLoadingJPG() throws IOException {
+        LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
+
+        BufferedImage pngImage = new BufferedImage(10,10, BufferedImage.TYPE_INT_RGB);
+        File pngFile = File.createTempFile("test-image", ".jpg");
+        ImageIO.write(pngImage, "jpg", pngFile);
+
+        try {
+            assertTrue(compareBufferedImages(pngImage, localFileSystemImageManager.loadImage(pngFile)));
+        } finally {
+            Files.deleteIfExists(pngFile.toPath());
+        }
     }
 
     // test for:
@@ -158,10 +221,61 @@ public class LocalFileSystemImageManagerTest {
     }
 
     @Test
-    void testValidFileSaved() throws IOException {
+    void testValidFilePNGSaved() throws IOException {
 
         BufferedImage imageForSaving = new BufferedImage(1980,1080, BufferedImage.TYPE_INT_RGB);
         File toSave = new File("newImage.png");
+
+        LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
+
+        try {
+            assertDoesNotThrow(() -> localFileSystemImageManager.saveImage(imageForSaving, toSave));
+        }
+        finally {
+            Files.deleteIfExists(toSave.toPath());
+        }
+
+    }
+
+    @Test
+    void testValidFileJPEGSaved() throws IOException {
+
+        BufferedImage imageForSaving = new BufferedImage(1980,1080, BufferedImage.TYPE_INT_RGB);
+        File toSave = new File("newImage.jpeg");
+
+        LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
+
+        try {
+            assertDoesNotThrow(() -> localFileSystemImageManager.saveImage(imageForSaving, toSave));
+        }
+        finally {
+            Files.deleteIfExists(toSave.toPath());
+        }
+
+    }
+
+    @Test
+    void testValidFileBMPSaved() throws IOException {
+
+        BufferedImage imageForSaving = new BufferedImage(1980,1080, BufferedImage.TYPE_INT_RGB);
+        File toSave = new File("newImage.bmp");
+
+        LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
+
+        try {
+            assertDoesNotThrow(() -> localFileSystemImageManager.saveImage(imageForSaving, toSave));
+        }
+        finally {
+            Files.deleteIfExists(toSave.toPath());
+        }
+
+    }
+
+    @Test
+    void testValidFileJPGSaved() throws IOException {
+
+        BufferedImage imageForSaving = new BufferedImage(1980,1080, BufferedImage.TYPE_INT_RGB);
+        File toSave = new File("newImage.jpg");
 
         LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
 
@@ -208,6 +322,29 @@ public class LocalFileSystemImageManagerTest {
 
         assertThrows(IOException.class, () -> localFileSystemImageManager.loadImagesFromDirectory(dirToFile.toFile()),
                 "Should throw IOException when a dir is passed that doesnt exists");
+    }
+
+    @Test
+    void testLoadImageFromDirSuccessfully() throws IOException {
+        LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
+        Path temporaryDir = Files.createTempDirectory("tempDirectory");
+
+        File image1 = temporaryDir.resolve("test1.png").toFile();
+        File image2 = temporaryDir.resolve("test2.png").toFile();
+
+        BufferedImage dummyImg = new BufferedImage(10,10, BufferedImage.TYPE_INT_RGB);
+
+        ImageIO.write(dummyImg, "png", image1);
+        ImageIO.write(dummyImg, "jpg", image2);
+
+        try {
+            List<BufferedImage> result = localFileSystemImageManager.loadImagesFromDirectory(temporaryDir.toFile());
+            assertEquals(2, result.size(), "When two files are in a directory, two files should be returned from there");
+        } finally {
+            Files.deleteIfExists(image1.toPath());
+            Files.deleteIfExists(image2.toPath());
+            Files.deleteIfExists(temporaryDir);
+        }
     }
 
     private boolean compareBufferedImages(BufferedImage bufferedOne, BufferedImage bufferedTwo) {

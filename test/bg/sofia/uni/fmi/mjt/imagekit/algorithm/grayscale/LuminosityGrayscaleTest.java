@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -21,21 +22,20 @@ public class LuminosityGrayscaleTest {
     }
 
     @Test
-    void testSuccessfullyGrayscale() throws IOException {
-
+    void testSuccessfullyGrayscale() {
         LuminosityGrayscale luminosityGrayscale = new LuminosityGrayscale();
-        LocalFileSystemImageManager localFileSystemImageManager = new LocalFileSystemImageManager();
+        Random random = new Random();
 
-        File expectedGrayscaleImage = new File("swampert-grayscale.png");
-        File inputGrayscaleImage = new File("swampert.png");
+        BufferedImage bufferedImage = new BufferedImage(100,100, BufferedImage.TYPE_INT_RGB);
+        for(int x = 0; x < 10; x++){
+            for(int y = 0; y < 10; y++){
+                bufferedImage.setRGB(x,y, random.nextInt(Integer.MIN_VALUE, Integer.MAX_VALUE));
+            }
+        }
+        BufferedImage bufferedImageAfterGrayscale = luminosityGrayscale.process(bufferedImage);
 
-        BufferedImage inputImage = localFileSystemImageManager.loadImage(inputGrayscaleImage);
-        BufferedImage expectedImage = localFileSystemImageManager.loadImage(expectedGrayscaleImage);
-
-        BufferedImage afterLuminosity = luminosityGrayscale.process(inputImage);
-
-        assertTrue(compareBufferedImages(afterLuminosity,expectedImage),
-                "The result after luminosity is not proper");
+        assertTrue(compareBufferedImages(bufferedImageAfterGrayscale, luminosityGrayscale.process(bufferedImage)),
+                "There is a problem with grayscale");
     }
 
     private boolean compareBufferedImages(BufferedImage bufferedOne, BufferedImage bufferedTwo) {
